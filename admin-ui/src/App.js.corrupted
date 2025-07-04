@@ -1,0 +1,1411 @@
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import {
+  Box, CircularProgress, AppBar, CssBaseline, Toolbar, Typography
+} from '@mui/material';
+
+// Importar componentes
+import { Sidebar } from './components/Sidebar';
+import OverviewPage from './pages/OverviewPage';
+import SessionsPage from './pages/SessionsPage';  
+import PlayerPage from './pages/PlayerPage';
+
+// CSS para animações
+const styles = `
+  @keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+`;
+
+// Inserir CSS no head se ainda não existir
+if (!document.querySelector('#clarity-styles')) {
+  const styleSheet = document.createElement('style');
+  styleSheet.id = 'clarity-styles';
+  styleSheet.textContent = styles;
+  document.head.appendChild(styleSheet);
+}
+
+const drawerWidth = 280;
+                      label={status.label}
+                      color={status.color}
+                      size="small"
+                      icon={status.icon}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <Badge badgeContent={detail.fastImages} color="primary">
+                      <Chip label={detail.totalImages} variant="outlined" />
+                    </Badge>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                      <TouchApp fontSize="small" />
+                      {detail.estimatedClicks}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <Typography variant="body2" fontWeight="bold">
+                        {formatDuration(detail.duration)}
+                      </Typography>
+                      {detail.isActive && (
+                        <Typography variant="caption" color="success.main">
+                          (em andamento)
+                        </Typography>
+                      )}
+                      {detail.isDisconnected && (
+                        <Typography variant="caption" color="error.main">
+                          (finalizada)
+                        </Typography>
+                      )}
+                    </Box>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <Typography variant="caption">
+                        {detail.isActive ?
+                          'Agora' :
+                          detail.lastImageTime.toLocaleTimeString()
+                        }
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {detail.isActive ?
+                          'Ativo' :
+                          detail.isDisconnected ?
+                            'Desconectado' :
+                            'Inativo'
+                        }
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onCreateVideo(sessionId);
+                        }}
+                        color="primary"
+                        title="Reproduzir vídeo"
+                      >
+                        <VideoLibrary />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteSession(sessionId);
+                        }}
+                        color="error"
+                        title="Deletar sessão"
+                      >
+                        <Delete />
+                      </IconButton>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Aviso sobre sessões desconectadas */}
+      {disconnectedSessions.size > 0 && (
+        <Paper sx={{ p: 2, mt: 2, bgcolor: 'warning.light' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Warning color="warning" />
+            <Typography variant="body2" color="warning.dark">
+              {disconnectedSessions.size} sessão(ões) desconectada(s).
+              Use o botão de deletar para remover sessões que não serão mais utilizadas.
+            </Typography>
+          </Box>
+        </Paper>
+      )}
+
+      {/* Aviso sobre sessões desconectadas */}
+      {disconnectedSessions.size > 0 && (
+        <Paper sx={{ p: 2, mt: 2, bgcolor: 'warning.light' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Warning color="warning" />
+            <Typography variant="body2" color="warning.dark">
+              {disconnectedSessions.size} sessão(ões) desconectada(s).
+              Use o botão de deletar para remover sessões que não serão mais utilizadas.
+            </Typography>
+          </Box>
+        </Paper>
+      )}
+    </Box>
+  );
+});
+
+// Componente de Player de Vídeo Aprimorado - Memoizado
+const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, currentIndex, playbackSpeed, onPlayPause, onStop, onIndexChange, onSpeedChange, onDeleteSession, sessionStats, disconnectedSessions, sessionStatus }) {
+  const stats = useMemo(() => ({
+    totalFrames: images.length,
+    duration: images.length > 1 ? images[images.length - 1].timestamp - images[0].timestamp : 0,
+    avgFPS: images.length > 1 ? (images.length - 1) / ((images[images.length - 1].timestamp - images[0].timestamp) / 1000) : 0
+  }), [images]);
+
+  const formatDuration = useCallback((ms) => {
+    const seconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    return `${minutes}:${(seconds % 60).toString().padStart(2, '0')}`;
+  }, []);
+
+  // Obter informações da sessão atual
+  const sessionDetail = sessionStats.sessionDetails?.[sessionId];
+  const isDisconnected = disconnectedSessions.has(sessionId);
+  const isOnline = sessionDetail?.isActive && !isDisconnected;
+
+  // Calcular tempo desde última atividade
+  const timeSinceLastActivity = useMemo(() => {
+    if (!sessionDetail?.lastImageTime) return null;
+    const now = Date.now();
+    const lastActivity = sessionDetail.lastImageTime.getTime();
+    const diffSeconds = Math.floor((now - lastActivity) / 1000);
+
+    if (diffSeconds < 60) return `${diffSeconds}s atrás`;
+    if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)}min atrás`;
+    return `${Math.floor(diffSeconds / 3600)}h atrás`;
+  }, [sessionDetail?.lastImageTime]);
+
+  // Status da sessão com timeout de 20s
+  const getSessionStatus = useCallback(() => {
+    if (isDisconnected) {
+      return {
+        label: 'Offline',
+        color: 'error',
+        icon: <SignalWifiOff />,
+        description: 'Usuário desconectado'
+      };
+    } else if (isOnline) {
+      return {
+        label: 'Online',
+        color: 'success',
+        icon: <Visibility />,
+        description: 'Usuário ativo agora'
+      };
+    } else {
+      return {
+        label: 'Timeout (20s)',
+        color: 'warning',
+        icon: <Schedule />,
+        description: 'Sem atividade há mais de 20 segundos'
+      };
+    }
+  }, [isDisconnected, isOnline]);
+
+  return (
+    <Box sx={{ p: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <VideoLibrary /> Player de Sessão
+        </Typography>
+        <Button
+          variant="outlined"
+          color="error"
+          size="small"
+          startIcon={<Delete />}
+          onClick={() => onDeleteSession(sessionId)}
+          sx={{ textTransform: 'none' }}
+        >
+          Deletar Sessão
+        </Button>
+      </Box>
+
+      {images.length > 0 ? (
+        <Grid container spacing={3}>
+          {/* Player Principal */}
+          <Grid item xs={12} md={8}>
+            <Paper sx={{ p: 2 }}>
+              <Box sx={{ textAlign: 'center', mb: 2 }}>
+                <img
+                  src={images[currentIndex]?.url}
+                  alt={`Frame ${currentIndex + 1}`}
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '500px',
+                    objectFit: 'contain',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px'
+                  }}
+                />
+              </Box>
+
+              {/* Informações do Frame */}
+              <Box sx={{ mb: 2, textAlign: 'center' }}>
+                <Typography variant="h6" color="primary">
+                  Frame {currentIndex + 1} de {images.length}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {images[currentIndex]?.timestamp &&
+                    new Date(images[currentIndex].timestamp).toLocaleString()
+                  }
+                </Typography>
+              </Box>
+
+              {/* Controles */}
+              <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mb: 3 }}>
+                <IconButton onClick={onPlayPause} color="primary" size="large">
+                  {isPlaying ? <Pause /> : <PlayArrow />}
+                </IconButton>
+                <IconButton onClick={onStop} color="secondary" size="large">
+                  <Stop />
+                </IconButton>
+              </Box>
+
+              {/* Slider de Progresso */}
+              <Box sx={{ px: 2, mb: 3 }}>
+                <Slider
+                  value={currentIndex}
+                  min={0}
+                  max={images.length - 1}
+                  onChange={(e, value) => onIndexChange(value)}
+                  valueLabelDisplay="auto"
+                  valueLabelFormat={(value) => `Frame ${value + 1}`}
+                />
+              </Box>
+
+              {/* Controle de Velocidade */}
+              <Box sx={{ px: 2 }}>
+                <Typography variant="body2" gutterBottom>
+                  Velocidade: {(1000 / playbackSpeed).toFixed(1)} FPS
+                </Typography>
+                <Slider
+                  value={playbackSpeed}
+                  min={42}
+                  max={2000}
+                  step={1}
+                  onChange={(e, value) => onSpeedChange(value)}
+                  valueLabelDisplay="auto"
+                  valueLabelFormat={(value) => `${(1000 / value).toFixed(1)} FPS`}
+                  marks={[
+                    { value: 42, label: '24 FPS' },
+                    { value: 100, label: '10 FPS' },
+                    { value: 200, label: '5 FPS' },
+                    { value: 500, label: '2 FPS' },
+                    { value: 1000, label: '1 FPS' },
+                    { value: 2000, label: '0.5 FPS' }
+                  ]}
+                />
+              </Box>
+            </Paper>
+          </Grid>
+
+          {/* Estatísticas da Sessão */}
+          <Grid item xs={12} md={4}>
+            <Paper sx={{ p: 2, height: 'fit-content' }}>
+              <Typography variant="h6" gutterBottom>
+                📊 Estatísticas da Sessão
+              </Typography>
+
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Sessão ID:
+                </Typography>
+                <Typography variant="body2" sx={{ wordBreak: 'break-all', fontSize: '0.8rem' }}>
+                  {sessionId}
+                </Typography>
+              </Box>
+
+              <Divider sx={{ my: 2 }} />
+
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h4" color="primary">
+                      {stats.totalFrames}
+                    </Typography>
+                    <Typography variant="caption">Total Frames</Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={6}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h4" color="secondary">
+                      {formatDuration(stats.duration)}
+                    </Typography>
+                    <Typography variant="caption">Duração</Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={6}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h4" color="success.main">
+                      {stats.avgFPS.toFixed(1)}
+                    </Typography>
+                    <Typography variant="caption">FPS Médio</Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={6}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h4" color="warning.main">
+                      {Math.floor(stats.totalFrames / 2.5)}
+                    </Typography>
+                    <Typography variant="caption">Cliques Est.</Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+
+              <Divider sx={{ my: 2 }} />
+
+              {/* Progresso da Reprodução */}
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body2" gutterBottom>
+                  Progresso da Reprodução
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={(currentIndex / (images.length - 1)) * 100}
+                  sx={{ height: 8, borderRadius: 1 }}
+                />
+                <Typography variant="caption" color="text.secondary">
+                  {((currentIndex / (images.length - 1)) * 100).toFixed(1)}% completo
+                </Typography>
+              </Box>
+
+              <Divider sx={{ my: 2 }} />
+
+              {/* Status da Sessão com Timeout */}
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body2" gutterBottom>
+                  Status da Sessão
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                  {(() => {
+                    const status = getSessionStatus();
+                    return (
+                      <Chip
+                        label={status.label}
+                        color={status.color}
+                        size="small"
+                        icon={status.icon}
+                        sx={{ minWidth: '80px' }}
+                      />
+                    );
+                  })()}
+                  {timeSinceLastActivity && (
+                    <Typography variant="caption" color="text.secondary">
+                      {timeSinceLastActivity}
+                    </Typography>
+                  )}
+                </Box>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                  {getSessionStatus().description}
+                  {!isDisconnected && !isOnline && (
+                    <span style={{ color: '#f57c00' }}> - Sistema detecta inatividade após 20s sem atualizações</span>
+                  )}
+                </Typography>
+              </Box>
+            </Paper>
+          </Grid>
+        </Grid>
+      ) : (
+        <Box sx={{ textAlign: 'center', py: 4 }}>
+          <Typography variant="h6" color="text.secondary">
+            Nenhuma imagem encontrada para esta sessão
+          </Typography>
+        </Box>
+      )}
+    </Box>
+  );
+});
+
+const EmptyState = memo(function EmptyState() {
+  return (
+    <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="40vh">
+      <img src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png" alt="Nenhuma imagem" width={120} style={{ opacity: 0.3, marginBottom: 16 }} />
+      <Typography variant="h5" color="text.secondary">Nenhuma imagem criada</Typography>
+    </Box>
+  );
+});
+
+const ImageCard = memo(function ImageCard({ image, onImageClick }) {
+  return (
+    <Card sx={{ width: 220, m: 1, boxShadow: 2, cursor: 'pointer', transition: '0.2s', '&:hover': { boxShadow: 6 } }} onClick={() => onImageClick(image)}>
+      <CardMedia component="img" height="140" image={image.url || image.filename} alt={image.filename} />
+      <CardContent sx={{ p: 1 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ wordBreak: 'break-all' }}>{image.filename}</Typography>
+        <Typography variant="caption" color="text.disabled">
+          {image.timestamp ? new Date(image.timestamp).toLocaleString() : 'N/A'}
+        </Typography>
+      </CardContent>
+    </Card>
+  );
+});
+
+function App() {
+  const [groups, setGroups] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedSession, setSelectedSession] = useState(null);
+  const [videoDialogOpen, setVideoDialogOpen] = useState(false);
+  const [videoImages, setVideoImages] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState(42); // ms between frames (24 FPS)
+  const [currentTab, setCurrentTab] = useState(0); // 0: Overview, 1: Sessions, 2: Video
+  const [sessionStats, setSessionStats] = useState({});
+  const [lastUpdateTime, setLastUpdateTime] = useState(Date.now());
+  const [sessionStatus, setSessionStatus] = useState({});
+  const [disconnectedSessions, setDisconnectedSessions] = useState(new Set());
+
+  // Estados WebSocket
+  const [wsStats, setWsStats] = useState({
+    totalMessages: 0,
+    imagesReceived: 0,
+    activeConnections: 0,
+    serverStatus: 'connecting'
+  });
+  const [activeWsConnections, setActiveWsConnections] = useState({});
+  const [wsServerConnected, setWsServerConnected] = useState(false);
+
+  const wsRef = useRef(null);
+  const wsHeatmapRef = useRef(null); // Novo ref para WebSocket do heatmap server
+  const videoIntervalRef = useRef(null);
+
+  // Memoizar dados derivados para evitar recálculos desnecessários - definir antes dos callbacks
+  const images = useMemo(() => selectedSession && groups ? groups[selectedSession] : [], [selectedSession, groups]);
+
+  // Memoizar fetchImages para evitar recriações desnecessárias
+  const fetchImages = useCallback(async () => {
+    if (!document.hasFocus()) return; // Evitar fetch quando aba não está ativa
+    
+    setLoading(true);
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
+    try {
+      const res = await fetch(`${apiUrl}/api/images`);
+      const data = await res.json();
+
+      // Processar URLs das imagens para incluir prefixo do servidor
+      const processedData = {};
+      Object.entries(data).forEach(([sessionId, images]) => {
+        processedData[sessionId] = images.map(image => ({
+          ...image,
+          url: image.url.startsWith('http') ? image.url : `${apiUrl}${image.url}`
+        }));
+      });
+
+      setGroups(processedData);
+
+      // Buscar status das sessões
+      try {
+        const statusRes = await fetch(`${apiUrl}/api/session-status`);
+        const statusData = await statusRes.json();
+        setSessionStatus(statusData);
+      } catch (error) {
+        // Silenciar erro
+      }
+
+      // Calcular estatísticas das sessões
+      const stats = calculateSessionStats(processedData);
+      setSessionStats(stats);
+
+      // Atualizar tempo da última atualização
+      setLastUpdateTime(Date.now());
+
+      setLoading(false);
+
+      // Seleciona a primeira sessão automaticamente se não houver seleção
+      if (data && Object.keys(data).length > 0 && !selectedSession) {
+        setSelectedSession(Object.keys(data)[0]);
+      }
+      // Se a sessão selecionada sumiu, seleciona outra
+      if (selectedSession && data && !data[selectedSession]) {
+        setSelectedSession(Object.keys(data)[0] || null);
+      }
+    } catch (error) {
+      setLoading(false);
+    }
+  }, []); // Sem dependências para evitar recriação
+
+  // Função para calcular estatísticas das sessões - memoizada
+  const calculateSessionStats = useCallback((groups) => {
+    if (!groups) return {};
+
+    const stats = {
+      totalSessions: Object.keys(groups).length,
+      totalImages: 0,
+      totalClicks: 0,
+      avgSessionTime: 0,
+      mostActiveSession: null,
+      sessionDetails: {}
+    };
+
+    let totalDuration = 0;
+    let maxImages = 0;
+    const currentTime = Date.now();
+
+    Object.entries(groups).forEach(([sessionId, images]) => {
+      if (images.length === 0) return;
+
+      // Ordenar por timestamp
+      const sortedImages = images.sort((a, b) => a.timestamp - b.timestamp);
+      const startTime = sortedImages[0].timestamp;
+      const lastImageTime = sortedImages[sortedImages.length - 1].timestamp;
+
+      // Verificar se a sessão está ativa:
+      // - Última imagem há menos de 20 segundos = Online
+      // - Última imagem há mais de 20 segundos = Offline (timeout)
+      const TIMEOUT_THRESHOLD = 20 * 1000; // 20 segundos
+      const isSessionActive = currentTime - lastImageTime < TIMEOUT_THRESHOLD;
+      const serverStatus = sessionStatus[sessionId]?.status;
+      const isDisconnected = disconnectedSessions.has(sessionId) || serverStatus === 'disconnected';
+
+      // Calcular duração real da sessão:
+      // - Se sessão foi desconectada, usar timestamp de desconexão
+      // - Se sessão ainda está ativa, usar tempo atual
+      // - Se sessão está inativa (última imagem há mais de 10min), usar timestamp da última imagem
+      let endTime;
+      if (isDisconnected && sessionStatus[sessionId]?.disconnectedAt) {
+        endTime = sessionStatus[sessionId].disconnectedAt;
+      } else if (isSessionActive) {
+        endTime = currentTime; // Sessão ainda ativa, usar tempo atual
+      } else {
+        endTime = lastImageTime; // Sessão inativa, usar última imagem
+      }
+
+      const duration = endTime - startTime;
+
+      // Contar cliques estimados (assumindo cliques a cada 2-3 imagens fast)
+      const fastImages = images.filter(img => img.filename.includes('_fast_'));
+      const estimatedClicks = Math.floor(fastImages.length / 2.5);
+
+      // Analisar atividade por hora
+      const activityByHour = {};
+      images.forEach(img => {
+        const hour = new Date(img.timestamp).getHours();
+        activityByHour[hour] = (activityByHour[hour] || 0) + 1;
+      });
+
+      const sessionDetail = {
+        sessionId,
+        totalImages: images.length,
+        fastImages: fastImages.length,
+        regularImages: images.length - fastImages.length,
+        estimatedClicks,
+        duration: duration,
+        startTime: new Date(startTime),
+        endTime: new Date(endTime),
+        lastImageTime: new Date(lastImageTime),
+        avgInterval: images.length > 1 ? duration / (images.length - 1) : 0,
+        activityByHour,
+        isActive: isSessionActive && !isDisconnected,
+        isDisconnected: isDisconnected,
+        realEndTime: endTime // Timestamp real do fim (atual se ativo, desconexão se desconectado, última imagem se inativo)
+      };
+
+      stats.sessionDetails[sessionId] = sessionDetail;
+      stats.totalImages += images.length;
+      stats.totalClicks += estimatedClicks;
+      totalDuration += duration;
+
+      if (images.length > maxImages) {
+        maxImages = images.length;
+        stats.mostActiveSession = sessionId;
+      }
+    });
+
+    stats.avgSessionTime = stats.totalSessions > 0 ? totalDuration / stats.totalSessions : 0;
+
+    return stats;
+  }, [sessionStatus, disconnectedSessions]);
+
+  const handleCreateVideo = useCallback(async (sessionId) => {
+    // Como as imagens já estão carregadas com URLs completas, apenas selecionar a sessão
+    setSelectedSession(sessionId);
+    setCurrentTab(2); // Ir para aba do player
+    setCurrentImageIndex(0);
+  }, []);
+
+  const handlePlayPause = useCallback(() => {
+    if (isPlaying) {
+      clearInterval(videoIntervalRef.current);
+      setIsPlaying(false);
+    } else {
+      // Se estiver no último frame, voltar ao início
+      if (currentImageIndex >= images.length - 1) {
+        setCurrentImageIndex(0);
+      }
+
+      setIsPlaying(true);
+      videoIntervalRef.current = setInterval(() => {
+        setCurrentImageIndex(prev => {
+          // Se chegou no último frame, para a reprodução
+          if (prev >= images.length - 1) {
+            clearInterval(videoIntervalRef.current);
+            setIsPlaying(false);
+            return prev; // Mantém no último frame
+          }
+          return prev + 1;
+        });
+      }, playbackSpeed);
+    }
+  }, [isPlaying, images.length, playbackSpeed, currentImageIndex]);
+
+  const handleStop = useCallback(() => {
+    clearInterval(videoIntervalRef.current);
+    setIsPlaying(false);
+    setCurrentImageIndex(0);
+  }, []);
+
+  // Função para deletar uma sessão - memoizada
+  const handleDeleteSession = useCallback(async (sessionId) => {
+    console.log('🗑️ Iniciando deleção da sessão:', sessionId);
+    
+    if (!window.confirm(`Tem certeza que deseja deletar a sessão "${sessionId}"?\n\nEsta ação irá remover todas as imagens e não pode ser desfeita.`)) {
+      console.log('🚫 Deleção cancelada pelo usuário');
+      return;
+    }
+    
+    console.log('✅ Deleção confirmada pelo usuário');
+
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+    console.log('🌐 URL da API:', apiUrl);
+
+    try {
+      console.log('📡 Enviando requisição DELETE para:', `${apiUrl}/api/session/${encodeURIComponent(sessionId)}`);
+      
+      const response = await fetch(`${apiUrl}/api/session/${encodeURIComponent(sessionId)}`, {
+        method: 'DELETE'
+      });
+
+      console.log('📥 Resposta recebida:', response.status, response.statusText);
+      const result = await response.json();
+      console.log('📦 Dados da resposta:', result);
+
+      if (result.success) {
+        console.log('🎉 Deleção bem-sucedida!');
+        
+        // Remover sessão dos estados locais
+        setGroups(prev => {
+          const newGroups = { ...prev };
+          delete newGroups[sessionId];
+          console.log('🗂️ Sessão removida do estado groups');
+          return newGroups;
+        });
+
+        setDisconnectedSessions(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(sessionId);
+          console.log('🔌 Sessão removida do estado disconnectedSessions');
+          return newSet;
+        });
+
+        // Se a sessão deletada era a selecionada
+        if (selectedSession === sessionId) {
+          console.log('🎯 Sessão deletada era a selecionada, ajustando navegação...');
+          // Se estamos na aba de sessões (1), permanecer na aba de sessões
+          // Se estamos no player (2), voltar para overview
+          if (currentTab === 2) {
+            console.log('📺 Voltando para overview (estava no player)');
+            setCurrentTab(0); // Voltar para overview apenas se estiver no player
+          }
+          setSelectedSession(null); // Limpar seleção
+          console.log('🔄 Seleção de sessão limpa');
+        }
+
+        console.log(`✅ Sessão ${sessionId} deletada com sucesso: ${result.deletedFiles} arquivos removidos`);
+
+        // Recarregar dados para garantir consistência
+        console.log('🔄 Recarregando dados...');
+        setTimeout(fetchImages, 500);
+      } else {
+        console.error('❌ Erro na deleção:', result.error);
+        alert('Erro ao deletar sessão: ' + result.error);
+      }
+    } catch (error) {
+      console.error('🚨 Erro ao deletar sessão:', error);
+      alert('Erro ao deletar sessão. Verifique a conexão.');
+    }
+  }, [selectedSession, fetchImages, currentTab]);
+
+  // UseEffect otimizado - com controle de reconexão para evitar loops
+  useEffect(() => {
+    let mounted = true;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+    let reconnectTimeout = null;
+    let statsInterval = null;
+    let lastFetchTime = 0;
+    const FETCH_THROTTLE = 1000; // Throttle fetch para evitar muitas chamadas
+
+    const connectWebSockets = () => {
+      if (!mounted) return;
+
+      fetchImages();
+
+      // WebSocket para atualização instantânea (servidor admin)
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+      const wsUrl = apiUrl.replace('http', 'ws');
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+
+      // WebSocket para monitorar heatmap server (porta 3002)
+      const wsHeatmap = new WebSocket('ws://localhost:3002');
+      wsHeatmapRef.current = wsHeatmap;
+
+      // Função throttled para fetch
+      const throttledFetch = () => {
+        const now = Date.now();
+        if (now - lastFetchTime > FETCH_THROTTLE) {
+          lastFetchTime = now;
+          fetchImages();
+        }
+      };
+
+      // Configurar WebSocket admin
+      ws.onopen = () => {
+        if (!mounted) return;
+        setWsStats(prev => ({ ...prev, serverStatus: 'connected' }));
+        reconnectAttempts = 0; // Reset tentativas após sucesso
+      };
+
+      ws.onmessage = (event) => {
+        if (!mounted) return;
+        try {
+          const data = JSON.parse(event.data);
+
+          if (data.type === 'new-image') {
+            // Otimização: usar throttled fetch para evitar muitas atualizações
+            if (data.sessionId) {
+              // Apenas atualizar estatísticas localmente sem fetch
+              setWsStats(prev => ({
+                ...prev,
+                imagesReceived: prev.imagesReceived + 1,
+                totalMessages: prev.totalMessages + 1
+              }));
+              
+              // Fetch throttled
+              throttledFetch();
+            } else {
+              // Fallback: buscar todos os dados
+              throttledFetch();
+            }
+          } else if (data.type === 'session_disconnected') {
+            setDisconnectedSessions(prev => new Set(prev).add(data.sessionId));
+
+            // Atualizar status da sessão
+            setSessionStatus(prev => ({
+              ...prev,
+              [data.sessionId]: {
+                ...prev[data.sessionId],
+                status: 'disconnected',
+                disconnectedAt: data.timestamp
+              }
+            }));
+
+            // Remover da lista de conexões ativas
+            setActiveWsConnections(prev => {
+              const newConnections = { ...prev };
+              delete newConnections[data.sessionId];
+              return newConnections;
+            });
+            
+            // Throttled fetch para refletir mudanças
+            throttledFetch();
+          } else if (data.type === 'session_deleted') {
+            throttledFetch();
+          }
+
+          setWsStats(prev => ({ ...prev, totalMessages: prev.totalMessages + 1 }));
+        } catch (error) {
+          // Fallback para mensagens antigas no formato string
+          if (event.data === 'new-image') {
+            throttledFetch();
+          }
+        }
+      };
+
+      ws.onclose = () => {
+        if (!mounted) return;
+        setWsStats(prev => ({ ...prev, serverStatus: 'disconnected' }));
+        
+        // Tentar reconectar com delay exponencial
+        if (reconnectAttempts < maxReconnectAttempts) {
+          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 10000);
+          reconnectAttempts++;
+          reconnectTimeout = setTimeout(() => {
+            if (mounted) connectWebSockets();
+          }, delay);
+        }
+      };
+
+      ws.onerror = () => {
+        if (!mounted) return;
+        setWsStats(prev => ({ ...prev, serverStatus: 'error' }));
+      };
+
+      // Configurar WebSocket heatmap monitor
+      wsHeatmap.onopen = () => {
+        if (!mounted) return;
+        setWsServerConnected(true);
+
+        // Solicitar status inicial
+        wsHeatmap.send(JSON.stringify({
+          type: 'admin_monitor_start',
+          timestamp: Date.now()
+        }));
+      };
+
+      wsHeatmap.onmessage = (event) => {
+        if (!mounted) return;
+        try {
+          const data = JSON.parse(event.data);
+
+          switch (data.type) {
+            case 'session_started':
+              setActiveWsConnections(prev => ({
+                ...prev,
+                [data.sessionId]: {
+                  sessionId: data.sessionId,
+                  connectedAt: Date.now(),
+                  lastActivity: Date.now(),
+                  imagesReceived: 0,
+                  qualityMode: 'balanced',
+                  uploading: false,
+                  url: data.url || 'unknown'
+                }
+              }));
+              // Throttled fetch para mostrar nova sessão no menu
+              throttledFetch();
+              break;
+
+            case 'image_uploaded':
+              setActiveWsConnections(prev => ({
+                ...prev,
+                [data.sessionId]: {
+                  ...prev[data.sessionId],
+                  lastActivity: Date.now(),
+                  imagesReceived: (prev[data.sessionId]?.imagesReceived || 0) + 1,
+                  uploading: false
+                }
+              }));
+              // Throttled fetch para mostrar nova imagem no contador
+              throttledFetch();
+              break;
+
+            case 'upload_in_progress':
+              setActiveWsConnections(prev => ({
+                ...prev,
+                [data.sessionId]: {
+                  ...prev[data.sessionId],
+                  lastActivity: Date.now(),
+                  uploading: true
+                }
+              }));
+              break;
+
+            case 'session_ended':
+              setActiveWsConnections(prev => {
+                const newConnections = { ...prev };
+                delete newConnections[data.sessionId];
+                return newConnections;
+              });
+              // Não atualizar dados automaticamente - apenas marcar timestamp
+              setLastUpdateTime(Date.now());
+              break;
+
+            case 'connections_status':
+              setActiveWsConnections(data.connections || {});
+              setWsStats(prev => ({
+                ...prev,
+                activeConnections: Object.keys(data.connections || {}).length
+              }));
+              break;
+          }
+        } catch (error) {
+          // Silenciar erros para evitar spam no console
+        }
+      };
+
+      wsHeatmap.onclose = () => {
+        if (!mounted) return;
+        setWsServerConnected(false);
+        setActiveWsConnections({});
+      };
+
+      // Atualizar estatísticas das conexões ativas periodicamente
+      statsInterval = setInterval(() => {
+        if (!mounted) return;
+        setWsStats(prev => ({
+          ...prev,
+          activeConnections: Object.keys(activeWsConnections).length
+        }));
+      }, 10000); // Aumentado para 10s
+    };
+
+    // Conectar WebSockets após pequeno delay
+    const initTimeout = setTimeout(() => {
+      if (mounted) connectWebSockets();
+    }, 500);
+
+    return () => {
+      mounted = false;
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      if (initTimeout) clearTimeout(initTimeout);
+      if (statsInterval) clearInterval(statsInterval);
+      if (videoIntervalRef.current) clearInterval(videoIntervalRef.current);
+      if (wsRef.current) wsRef.current.close();
+      if (wsHeatmapRef.current) wsHeatmapRef.current.close();
+    };
+  }, []); // Sem dependências para evitar re-execução
+
+  // Handlers memoizados para evitar re-renders desnecessários
+  const handleSelectSession = useCallback((sessionId) => {
+    setSelectedSession(sessionId);
+    setCurrentTab(2); // Ir para o player
+  }, []);
+
+  const handleTabChange = useCallback((tabIndex) => {
+    setCurrentTab(tabIndex);
+  }, []);
+
+  const handleSessionClick = useCallback((sessionId) => {
+    setSelectedSession(sessionId);
+    if (currentTab !== 2) setCurrentTab(2); // Ir para o player
+  }, [currentTab]);
+
+  // Memoizar dados derivados para evitar recálculos desnecessários
+  const sessionIds = useMemo(() => groups ? Object.keys(groups) : [], [groups]);
+
+  // Memoizar sessões ordenadas por status e atividade - OTIMIZADO
+  const sortedSessionIds = useMemo(() => {
+    if (!groups || !sessionStats.sessionDetails) return sessionIds;
+
+    return sessionIds.sort((a, b) => {
+      const aDetail = sessionStats.sessionDetails[a];
+      const bDetail = sessionStats.sessionDetails[b];
+      const aDisconnected = disconnectedSessions.has(a);
+      const bDisconnected = disconnectedSessions.has(b);
+      const aOnline = aDetail?.isActive && !aDisconnected;
+      const bOnline = bDetail?.isActive && !bDisconnected;
+
+      // Primeiro: sessões online
+      if (aOnline && !bOnline) return -1;
+      if (!aOnline && bOnline) return 1;
+
+      // Segundo: sessões desconectadas ficam por último
+      if (aDisconnected && !bDisconnected) return 1;
+      if (!aDisconnected && bDisconnected) return -1;
+
+      // Terceiro: por última atividade (mais recente primeiro)
+      const aLastActivity = aDetail?.lastImageTime?.getTime() || 0;
+      const bLastActivity = bDetail?.lastImageTime?.getTime() || 0;
+      return bLastActivity - aLastActivity;
+    });
+  }, [sessionIds, sessionStats.sessionDetails, disconnectedSessions]);
+
+  // Memoizar componentes da sidebar para evitar re-renders
+  const sidebarContent = useMemo(() => (
+    <>
+      <Typography variant="subtitle1" sx={{ px: 2, mb: 1, color: '#bbb' }}>Navegação</Typography>
+      <Divider sx={{ bgcolor: '#444' }} />
+
+      {/* Abas de Navegação */}
+      <List>
+        <ListItem disablePadding>
+          <ListItemButton
+            selected={currentTab === 0}
+            onClick={() => handleTabChange(0)}
+            sx={{ borderRadius: 1, mx: 1, my: 0.5 }}
+          >
+            <Analytics sx={{ mr: 1, color: currentTab === 0 ? '#90caf9' : '#bbb' }} />
+            <ListItemText primary="Overview" />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton
+            selected={currentTab === 1}
+            onClick={() => handleTabChange(1)}
+            sx={{ borderRadius: 1, mx: 1, my: 0.5 }}
+          >
+            <Timeline sx={{ mr: 1, color: currentTab === 1 ? '#90caf9' : '#bbb' }} />
+            <ListItemText primary="Sessões" />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton
+            selected={currentTab === 2}
+            onClick={() => handleTabChange(2)}
+            sx={{ borderRadius: 1, mx: 1, my: 0.5 }}
+          >
+            <VideoLibrary sx={{ mr: 1, color: currentTab === 2 ? '#90caf9' : '#bbb' }} />
+            <ListItemText primary="Player" />
+          </ListItemButton>
+        </ListItem>
+      </List>
+
+      <Divider sx={{ bgcolor: '#444', my: 2 }} />
+
+      <Typography variant="subtitle1" sx={{ px: 2, mb: 1, color: '#bbb' }}>
+        Sessões Ativas ({sortedSessionIds.length})
+      </Typography>
+    </>
+  ), [currentTab, handleTabChange, sortedSessionIds.length]);
+
+  // Memoizar lista de sessões para evitar re-renders desnecessários
+  const sessionList = useMemo(() => (
+    <List sx={{ 
+      maxHeight: 'calc(100vh - 400px)', 
+      overflow: 'auto',
+      '&::-webkit-scrollbar': {
+        width: '6px',
+      },
+      '&::-webkit-scrollbar-track': {
+        background: '#333',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        background: '#555',
+        borderRadius: '3px',
+      },
+      '&::-webkit-scrollbar-thumb:hover': {
+        background: '#777',
+      }
+    }}>
+      {sortedSessionIds.length === 0 && (
+        <ListItem>
+          <ListItemText primary={<span style={{ color: '#888' }}>Nenhuma sessão</span>} />
+        </ListItem>
+      )}
+      {sortedSessionIds.map((sessionId, index) => {
+        const sessionDetail = sessionStats.sessionDetails?.[sessionId];
+        const isDisconnected = disconnectedSessions.has(sessionId);
+        const isOnline = sessionDetail?.isActive && !isDisconnected;
+        
+        // Verificar se deve mostrar separador
+        const prevSessionId = index > 0 ? sortedSessionIds[index - 1] : null;
+        const prevSessionDetail = prevSessionId ? sessionStats.sessionDetails?.[prevSessionId] : null;
+        const prevIsDisconnected = prevSessionId ? disconnectedSessions.has(prevSessionId) : false;
+        const prevIsOnline = prevSessionDetail?.isActive && !prevIsDisconnected;
+        
+        const showSeparator = index > 0 && (
+          (prevIsOnline && !isOnline && !isDisconnected) || // Online para Inativo
+          (!prevIsDisconnected && isDisconnected) // Qualquer para Desconectado
+        );
+
+        return (
+          <React.Fragment key={sessionId}>
+            {showSeparator && (
+              <ListItem sx={{ py: 0.5 }}>
+                <Divider sx={{ 
+                  width: '100%', 
+                  bgcolor: '#444',
+                  '&::before, &::after': {
+                    borderColor: '#444',
+                  }
+                }} textAlign="center">
+                  <Typography variant="caption" sx={{ 
+                    color: '#666', 
+                    fontSize: '0.7rem',
+                    px: 1,
+                    textTransform: 'uppercase'
+                  }}>
+                    {isDisconnected ? 'Offline' : 'Inativo'}
+                  </Typography>
+                </Divider>
+              </ListItem>
+            )}
+            <ListItem disablePadding>
+              <ListItemButton
+                selected={selectedSession === sessionId}
+                onClick={() => handleSessionClick(sessionId)}
+                sx={{ borderRadius: 1, mx: 1, my: 0.5 }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1 }}>
+                  {/* Indicador de status online/offline */}
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      bgcolor: isOnline ? '#4caf50' : isDisconnected ? '#f44336' : '#ff9800',
+                      flexShrink: 0
+                    }}
+                  />
+                  <ListItemText
+                    primary={
+                      <span style={{
+                        fontWeight: 500,
+                        color: selectedSession === sessionId ? '#90caf9' : '#fff',
+                        fontSize: '0.85rem'
+                      }}>
+                        {sessionId.length > 18 ? sessionId.substring(0, 18) + '...' : sessionId}
+                      </span>
+                    }
+                    secondary={
+                      <span style={{ color: '#bbb', fontSize: '0.75rem' }}>
+                        {`${groups[sessionId].length} frames • ${isOnline ? 'Online' : isDisconnected ? 'Offline' : 'Inativo'}`}
+                      </span>
+                    }
+                  />
+                </Box>
+              </ListItemButton>
+            </ListItem>
+          </React.Fragment>
+        );
+      })}
+    </List>
+  ), [sortedSessionIds, sessionStats.sessionDetails, disconnectedSessions, groups, selectedSession, handleSessionClick]);
+
+  // UseEffect para monitorar e atualizar dados do menu lateral - OTIMIZADO
+  useEffect(() => {
+    // Apenas recalcula se groups realmente mudou (não apenas a referência)
+    if (groups) {
+      const stats = calculateSessionStats(groups);
+      setSessionStats(prevStats => {
+        // Comparação superficial para evitar updates desnecessários
+        if (JSON.stringify(prevStats.totalSessions) !== JSON.stringify(stats.totalSessions) ||
+            JSON.stringify(prevStats.totalImages) !== JSON.stringify(stats.totalImages)) {
+          return stats;
+        }
+        return prevStats;
+      });
+    }
+  }, [groups, calculateSessionStats]);
+
+  // UseEffect otimizado para auto-update - reduzido para 10 segundos
+  useEffect(() => {
+    const autoUpdateInterval = setInterval(() => {
+      // Só atualiza se a aba estiver ativa e não estiver carregando
+      if (document.hasFocus() && !loading) {
+        fetchImages();
+      }
+    }, 10000); // Aumentado para 10 segundos para reduzir carga
+
+    return () => clearInterval(autoUpdateInterval);
+  }, [fetchImages, loading]);
+
+  return (
+    <Box sx={{ display: 'flex', bgcolor: '#f5f5f5', minHeight: '100vh' }}>
+      <CssBaseline />
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, bgcolor: '#222' }}>
+        <Toolbar>
+          <Typography variant="h5" noWrap component="div">
+            📊 Clarity Analytics Platform
+          </Typography>
+        </Toolbar>
+      </AppBar>
+
+      <Drawer
+        variant="permanent"
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box', bgcolor: '#23272f', color: '#fff' },
+        }}
+      >
+        <Toolbar />
+        <Box sx={{ overflow: 'auto', pt: 2 }}>
+          <Typography variant="subtitle1" sx={{ px: 2, mb: 1, color: '#bbb' }}>Navegação</Typography>
+          <Divider sx={{ bgcolor: '#444' }} />
+
+          {/* Abas de Navegação */}
+          <List>
+            <ListItem disablePadding>
+              <ListItemButton
+                selected={currentTab === 0}
+                onClick={() => handleTabChange(0)}
+                sx={{ borderRadius: 1, mx: 1, my: 0.5 }}
+              >
+                <Analytics sx={{ mr: 1, color: currentTab === 0 ? '#90caf9' : '#bbb' }} />
+                <ListItemText primary="Overview" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                selected={currentTab === 1}
+                onClick={() => handleTabChange(1)}
+                sx={{ borderRadius: 1, mx: 1, my: 0.5 }}
+              >
+                <Timeline sx={{ mr: 1, color: currentTab === 1 ? '#90caf9' : '#bbb' }} />
+                <ListItemText primary="Sessões" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                selected={currentTab === 2}
+                onClick={() => handleTabChange(2)}
+                sx={{ borderRadius: 1, mx: 1, my: 0.5 }}
+              >
+                <VideoLibrary sx={{ mr: 1, color: currentTab === 2 ? '#90caf9' : '#bbb' }} />
+                <ListItemText primary="Player" />
+              </ListItemButton>
+            </ListItem>
+          </List>
+
+          <Divider sx={{ bgcolor: '#444', my: 2 }} />
+
+          <Typography variant="subtitle1" sx={{ px: 2, mb: 1, color: '#bbb' }}>Sessões Ativas ({sortedSessionIds.length})</Typography>
+          <List sx={{ 
+            maxHeight: 'calc(100vh - 400px)', 
+            overflow: 'auto',
+            '&::-webkit-scrollbar': {
+              width: '6px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: '#333',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: '#555',
+              borderRadius: '3px',
+            },
+            '&::-webkit-scrollbar-thumb:hover': {
+              background: '#777',
+            }
+          }}>
+            {sortedSessionIds.length === 0 && (
+              <ListItem>
+                <ListItemText primary={<span style={{ color: '#888' }}>Nenhuma sessão</span>} />
+              </ListItem>
+            )}
+            {sortedSessionIds.map((sessionId, index) => {
+              const sessionDetail = sessionStats.sessionDetails?.[sessionId];
+              const isDisconnected = disconnectedSessions.has(sessionId);
+              const isOnline = sessionDetail?.isActive && !isDisconnected;
+              
+              // Verificar se deve mostrar separador
+              const prevSessionId = index > 0 ? sortedSessionIds[index - 1] : null;
+              const prevSessionDetail = prevSessionId ? sessionStats.sessionDetails?.[prevSessionId] : null;
+              const prevIsDisconnected = prevSessionId ? disconnectedSessions.has(prevSessionId) : false;
+              const prevIsOnline = prevSessionDetail?.isActive && !prevIsDisconnected;
+              
+              const showSeparator = index > 0 && (
+                (prevIsOnline && !isOnline && !isDisconnected) || // Online para Inativo
+                (!prevIsDisconnected && isDisconnected) // Qualquer para Desconectado
+              );
+
+              return (
+                <React.Fragment key={sessionId}>
+                  {showSeparator && (
+                    <ListItem sx={{ py: 0.5 }}>
+                      <Divider sx={{ 
+                        width: '100%', 
+                        bgcolor: '#444',
+                        '&::before, &::after': {
+                          borderColor: '#444',
+                        }
+                      }} textAlign="center">
+                        <Typography variant="caption" sx={{ 
+                          color: '#666', 
+                          fontSize: '0.7rem',
+                          px: 1,
+                          textTransform: 'uppercase'
+                        }}>
+                          {isDisconnected ? 'Offline' : 'Inativo'}
+                        </Typography>
+                      </Divider>
+                    </ListItem>
+                  )}
+                  <ListItem disablePadding>
+                    <ListItemButton
+                      selected={selectedSession === sessionId}
+                      onClick={() => handleSessionClick(sessionId)}
+                      sx={{ borderRadius: 1, mx: 1, my: 0.5 }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1 }}>
+                        {/* Indicador de status online/offline */}
+                        <Box
+                          sx={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: '50%',
+                            bgcolor: isOnline ? '#4caf50' : isDisconnected ? '#f44336' : '#ff9800',
+                            flexShrink: 0
+                          }}
+                        />
+                        <ListItemText
+                          primary={
+                            <span style={{
+                              fontWeight: 500,
+                              color: selectedSession === sessionId ? '#90caf9' : '#fff',
+                              fontSize: '0.85rem'
+                            }}>
+                              {sessionId.length > 18 ? sessionId.substring(0, 18) + '...' : sessionId}
+                            </span>
+                          }
+                          secondary={
+                            <span style={{ color: '#bbb', fontSize: '0.75rem' }}>
+                              {`${groups[sessionId].length} frames • ${isOnline ? 'Online' : isDisconnected ? 'Offline' : 'Inativo'}`}
+                            </span>
+                          }
+                        />
+                      </Box>
+                    </ListItemButton>
+                  </ListItem>
+                </React.Fragment>
+              );
+            })}
+          </List>
+        </Box>
+      </Drawer>
+
+      <Box component="main" sx={{ flexGrow: 1, width: { sm: `calc(100% - ${drawerWidth}px)` } }}>
+        <Toolbar />
+
+        {loading ? (
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="40vh">
+            <CircularProgress />
+          </Box>
+        ) : (
+          <>
+            {/* Renderização baseada na aba selecionada */}
+            {currentTab === 0 && (
+              <OverviewStats
+                stats={sessionStats}
+                lastUpdateTime={lastUpdateTime}
+                wsStats={sessionStats.wsStats}
+              />
+            )}
+
+            {currentTab === 1 && (
+              <SessionsList
+                stats={sessionStats}
+                groups={groups}
+                selectedSession={selectedSession}
+                onSelectSession={handleSelectSession}
+                onCreateVideo={handleCreateVideo}
+                onDeleteSession={handleDeleteSession}
+                disconnectedSessions={disconnectedSessions}
+                sessionStatus={sessionStatus}
+              />
+            )}
+
+            {currentTab === 2 && (
+              selectedSession && images.length > 0 ? (
+                <VideoPlayer
+                  sessionId={selectedSession}
+                  images={images}
+                  isPlaying={isPlaying}
+                  currentIndex={currentImageIndex}
+                  playbackSpeed={playbackSpeed}
+                  onPlayPause={handlePlayPause}
+                  onStop={handleStop}
+                  onIndexChange={setCurrentImageIndex}
+                  onSpeedChange={setPlaybackSpeed}
+                  onDeleteSession={handleDeleteSession}
+                  sessionStats={sessionStats}
+                  disconnectedSessions={disconnectedSessions}
+                  sessionStatus={sessionStatus}
+                />
+              ) : (
+                <Box sx={{ p: 3, textAlign: 'center' }}>
+                  <Typography variant="h5" color="text.secondary" gutterBottom>
+                    Selecione uma sessão para reproduzir
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    Escolha uma sessão na barra lateral ou na aba "Sessões"
+                  </Typography>
+                </Box>
+              )
+            )}
+          </>
+        )}
+      </Box>
+    </Box>
+  );
+}
+
+export default App;
