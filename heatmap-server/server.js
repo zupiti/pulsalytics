@@ -43,8 +43,9 @@ app.post('/upload', upload.single('image'), (req, res) => {
 
     // Extrair sessionId do nome do arquivo para atualizar status
     const match = req.file.filename.match(/^heatmap(_fast)?_(.+)_(\d{13})_\d+\./);
+    let sessionInfo = null;
     if (match) {
-        const sessionInfo = match[2];
+        sessionInfo = match[2];
         sessionStatus.set(sessionInfo, {
             status: 'active',
             lastActivity: Date.now(),
@@ -53,7 +54,9 @@ app.post('/upload', upload.single('image'), (req, res) => {
     }
 
     res.json({ success: true, filename: req.file.filename });
-    broadcastNewImage();
+
+    // Broadcast específico da nova imagem com informações da sessão
+    broadcastNewImage(sessionInfo, req.file.filename);
 });
 
 // Endpoint para receber eventos de sessão
@@ -216,10 +219,23 @@ const server = app.listen(PORT, () => {
 // WebSocket server
 const wss = new WebSocket.Server({ server });
 
-function broadcastNewImage() {
+function broadcastNewImage(sessionId = null, filename = null) {
+    const message = {
+        type: 'new-image',
+        timestamp: Date.now()
+    };
+
+    if (sessionId) {
+        message.sessionId = sessionId;
+    }
+
+    if (filename) {
+        message.filename = filename;
+    }
+
     wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({ type: 'new-image' }));
+            client.send(JSON.stringify(message));
         }
     });
 }
