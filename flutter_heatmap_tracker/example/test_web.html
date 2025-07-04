@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Test Flutter Heatmap</title>
+</head>
+
+<body>
+    <h1>Teste do Flutter Heatmap Tracker</h1>
+    <p>Clique <a href="http://localhost:8081" target="_blank">aqui</a> para abrir o exemplo do Flutter</p>
+    <p>Status do servidor: <span id="server-status">Verificando...</span></p>
+
+    <script>
+        // Testa conectividade com o servidor
+        fetch('http://localhost:3001')
+            .then(response => {
+                document.getElementById('server-status').textContent = 'Servidor OK';
+                document.getElementById('server-status').style.color = 'green';
+            })
+            .catch(error => {
+                document.getElementById('server-status').textContent = 'Servidor não disponível';
+                document.getElementById('server-status').style.color = 'red';
+            });
+    </script>
+</body>
+
+</html>
