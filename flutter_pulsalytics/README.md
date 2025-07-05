@@ -1,5 +1,7 @@
 # Flutter Heatmap Tracker
 
+> ⚠️ **Aviso:** Este projeto ainda está em fase de desenvolvimento. Faltam implementações para tratamento de dados sensíveis e otimização de código. Use apenas para testes e desenvolvimento!
+
 > **Atenção:** Para utilizar todas as funcionalidades desta biblioteca, é necessário:
 >
 > 1. Rodar o painel de administração (admin-ui):
@@ -20,6 +22,8 @@ Esta biblioteca tem como objetivo rastrear interações de usuários em aplicaç
 - O plugin coleta dados de interação do usuário (mouse, cliques, screenshots) e envia para o servidor via HTTP e WebSocket.
 - O servidor armazena e processa esses dados.
 - O admin-ui permite visualizar sessões ativas, heatmaps e estatísticas em tempo real.
+
+![Exemplo de uso](./usage.png)
 
 ## Funcionalidades
 

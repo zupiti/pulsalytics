@@ -1,8 +1,19 @@
 # Changelog
 
-Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
+Todas as mudanças notáveis deste projeto serão documentadas neste arquivo.
 
-## [1.0.0] - 2025-01-07
+## [1.0.0] - 2024-06-07
+### Adicionado
+- Primeira versão pública do plugin.
+- Rastreamento de mouse, cliques e screenshots.
+- Envio de dados para servidor via HTTP e WebSocket.
+- Visualização em tempo real via admin-ui.
+- Exemplo de uso e documentação inicial.
+
+### Avisos
+- Projeto em desenvolvimento. Falta tratamento de dados sensíveis e otimização de código.
+
+## [1.0.1] - 2025-01-07
 
 ### ✨ Adicionado
 - **Tracking de mouse em tempo real**: Captura automática de movimentos do mouse
