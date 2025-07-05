@@ -1,9 +1,9 @@
 const config = window.HEATMAP_CONFIG || {
     serverUrl: 'ws://localhost:3002',
-    interval: 2000, // 2 segundos parametrizado
-    imageInterval: 5000, // 5 segundos para imagens (delay)
+    interval: 2000, // 2 seconds parameterized
+    imageInterval: 5000, // 5 seconds for images (delay)
     userId: null,
-    // Remover todas as outras configurações complexas
+    // Remove all other complex configurations
 };
 
 class HeatmapTracker {
@@ -15,11 +15,11 @@ class HeatmapTracker {
         this.isConnected = false;
         this.messageQueue = [];
 
-        // Dados persistentes em memória
+        // Persistent data in memory
         this.mousePositions = [];
         this.clickPoints = [];
-        this.allPositions = []; // Buffer persistente de todas as posições
-        this.allClicks = []; // Buffer persistente de todos os cliques
+        this.allPositions = []; // Persistent buffer of all positions
+        this.allClicks = []; // Persistent buffer of all clicks
         this.isMouseInFocus = false;
         this.interval = null;
         this.imageInterval = null;
@@ -85,7 +85,7 @@ class HeatmapTracker {
     }
 
     setupEventListeners() {
-        // Mouse move - capturar sempre, não apenas quando em foco
+        // Mouse move - always capture, not just when in focus
         document.addEventListener('mousemove', (e) => {
             const position = {
                 x: e.clientX,
@@ -93,19 +93,19 @@ class HeatmapTracker {
                 timestamp: Date.now()
             };
 
-            // Adicionar ao buffer atual
+            // Add to current buffer
             this.mousePositions.push(position);
 
-            // Adicionar ao buffer persistente
+            // Add to persistent buffer
             this.allPositions.push(position);
 
-            // Limitar buffer persistente a 1000 posições
+            // Limit persistent buffer to 1000 positions
             if (this.allPositions.length > 1000) {
                 this.allPositions.shift();
             }
         });
 
-        // Mouse click - sempre capturar
+        // Mouse click - always capture
         document.addEventListener('click', (e) => {
             const click = {
                 x: e.clientX,
@@ -113,13 +113,13 @@ class HeatmapTracker {
                 timestamp: Date.now()
             };
 
-            // Adicionar ao buffer atual
+            // Add to current buffer
             this.clickPoints.push(click);
 
-            // Adicionar ao buffer persistente
+            // Add to persistent buffer
             this.allClicks.push(click);
 
-            // Limitar buffer persistente a 100 cliques
+            // Limit persistent buffer to 100 clicks
             if (this.allClicks.length > 100) {
                 this.allClicks.shift();
             }
@@ -145,54 +145,54 @@ class HeatmapTracker {
     }
 
     startTracking() {
-        // Envio de dados (sem imagem) a cada 2 segundos
+        // Data sending (without image) every 2 seconds
         this.interval = setInterval(() => {
             this.sendDataOnly();
         }, this.config.interval);
 
-        // Envio de imagem a cada 5 segundos (com delay)
+        // Image sending every 5 seconds (with delay)
         this.imageInterval = setInterval(() => {
             this.sendDataWithImage();
         }, this.config.imageInterval);
     }
 
-    // Enviar apenas dados sem imagem (mais frequente)
+    // Send only data without image (more frequent)
     async sendDataOnly() {
         try {
-            // Sempre enviar dados se houver atividade
+            // Always send data if there is activity
             const hasActivity = this.mousePositions.length > 0 || this.clickPoints.length > 0;
 
             if (!hasActivity) {
-                return; // Não enviar se não há atividade
+                return; // Do not send if there is no activity
             }
 
-            // Enviar metadados sem imagem
+            // Send metadata without image
             const metadata = {
                 type: 'heatmap_metadata',
                 sessionId: this.sessionId,
                 timestamp: Date.now(),
                 url: this.url,
-                positions: [...this.allPositions], // Enviar buffer persistente
-                clickPoints: [...this.allClicks], // Enviar buffer persistente
+                positions: [...this.allPositions], // Send persistent buffer
+                clickPoints: [...this.allClicks], // Send persistent buffer
                 imageSize: 0,
                 imageType: 'none'
             };
 
             this.sendWebSocketMessage(metadata);
 
-            // Limpar apenas buffers temporários, manter persistentes
+            // Clear only temporary buffers, keep persistent
             this.mousePositions = [];
             this.clickPoints = [];
 
         } catch (error) {
-            console.error('Erro ao enviar dados:', error);
+            console.error('Error sending data:', error);
         }
     }
 
-    // Enviar dados com imagem (menos frequente)
+    // Send data with image (less frequent)
     async sendDataWithImage() {
         try {
-            // Só capturar imagem se houver atividade recent
+            // Only capture image if there was recent activity
             const hasRecentActivity = this.allPositions.length > 0 || this.allClicks.length > 0;
 
             if (!hasRecentActivity) {
@@ -200,7 +200,7 @@ class HeatmapTracker {
             }
 
             const now = Date.now();
-            // Verificar se passou tempo suficiente desde a última imagem
+            // Check if enough time has passed since the last image
             if (now - this.lastImageSent < this.config.imageInterval) {
                 return;
             }
@@ -216,28 +216,28 @@ class HeatmapTracker {
                     height: Math.min(window.innerHeight, 600)
                 });
 
-                // Converter para blob
+                // Convert to blob
                 const blob = await new Promise((resolve) => {
                     canvas.toBlob((blob) => {
                         resolve(blob);
                     }, 'image/webp', 0.7);
                 });
 
-                // Enviar metadados com imagem
+                // Send metadata with image
                 const metadata = {
                     type: 'heatmap_metadata',
                     sessionId: this.sessionId,
                     timestamp: now,
                     url: this.url,
-                    positions: [...this.allPositions], // Sempre enviar buffer persistente
-                    clickPoints: [...this.allClicks], // Sempre enviar buffer persistente
+                    positions: [...this.allPositions], // Always send persistent buffer
+                    clickPoints: [...this.allClicks], // Always send persistent buffer
                     imageSize: blob.size,
                     imageType: 'image/webp'
                 };
 
                 this.sendWebSocketMessage(metadata);
 
-                // Enviar o blob como ArrayBuffer
+                // Send the blob as ArrayBuffer
                 const arrayBuffer = await new Promise((resolve) => {
                     const reader = new FileReader();
                     reader.onload = () => resolve(reader.result);
@@ -251,13 +251,13 @@ class HeatmapTracker {
                 this.lastImageSent = now;
 
             } catch (error) {
-                console.error('Erro ao capturar imagem:', error);
-                // Mesmo sem imagem, enviar os dados
+                console.error('Error capturing image:', error);
+                // Even without image, send the data
                 this.sendDataOnly();
             }
 
         } catch (error) {
-            console.error('Erro ao enviar dados com imagem:', error);
+            console.error('Error sending data with image:', error);
         }
     }
 
@@ -274,7 +274,7 @@ class HeatmapTracker {
     }
 }
 
-// Inicializar automaticamente
+// Auto-initialize
 const heatmapTracker = new HeatmapTracker();
 
 // API global simples

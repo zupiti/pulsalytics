@@ -1,44 +1,44 @@
 # Changelog
 
-Todas as mudanças notáveis deste projeto serão documentadas neste arquivo.
+All notable changes to this project will be documented in this file.
 
 ## [1.0.0] - 2024-06-07
-### Adicionado
-- Primeira versão pública do plugin.
-- Rastreamento de mouse, cliques e screenshots.
-- Envio de dados para servidor via HTTP e WebSocket.
-- Visualização em tempo real via admin-ui.
-- Exemplo de uso e documentação inicial.
+### Added
+- First public release of the plugin.
+- Mouse, click, and screenshot tracking.
+- Data sending to server via HTTP and WebSocket.
+- Real-time visualization via admin-ui.
+- Usage example and initial documentation.
 
-### Avisos
-- Projeto em desenvolvimento. Falta tratamento de dados sensíveis e otimização de código.
+### Notices
+- Project under development. Sensitive data handling and code optimization are missing.
 
 ## [1.0.1] - 2025-01-07
 
-### ✨ Adicionado
-- **Tracking de mouse em tempo real**: Captura automática de movimentos do mouse
-- **Detecção de cliques**: Registro preciso de cliques com posição e timestamp
-- **Sistema de capturas automáticas**: Screenshots periódicas com mapas de calor
-- **Captura rápida inteligente**: Screenshots frequentes quando mouse está ativo
-- **Gerenciamento de sessões**: Sistema completo de sessões de usuário
-- **Detecção de mudanças de URL**: Tracking automático de navegação SPA
-- **Armazenamento local**: Persistência de dados no localStorage do navegador
-- **Sistema de eventos**: Stream de eventos para monitoramento em tempo real
-- **Configuração flexível**: Múltiplas opções de configuração
-- **Sistema de logs**: Logs detalhados para debug e monitoramento
-- **Exemplo completo**: App demonstrativo com interface de monitoramento
-- **Documentação completa**: README detalhado com exemplos
+### ✨ Added
+- **Real-time mouse tracking**: Automatic capture of mouse movements
+- **Click detection**: Precise click logging with position and timestamp
+- **Automatic screenshot system**: Periodic screenshots with heatmaps
+- **Smart fast capture**: Frequent screenshots when mouse is active
+- **Session management**: Complete user session system
+- **URL change detection**: Automatic SPA navigation tracking
+- **Local storage**: Data persistence in browser localStorage
+- **Event system**: Event stream for real-time monitoring
+- **Flexible configuration**: Multiple configuration options
+- **Logging system**: Detailed logs for debugging and monitoring
+- **Full example**: Demo app with monitoring interface
+- **Complete documentation**: Detailed README with examples
 
-### 🏗️ Arquitetura
-- **HeatmapTracker**: Classe principal singleton para gerenciamento
-- **HeatmapConfig**: Sistema de configuração type-safe
-- **HeatmapSession**: Gerenciamento de sessões com metadados
-- **HeatmapModels**: Modelos para posições, cliques e rastros
-- **HeatmapUtils**: Utilitários para storage, URLs e manipulação de dados
+### 🏗️ Architecture
+- **HeatmapTracker**: Main singleton class for management
+- **HeatmapConfig**: Type-safe configuration system
+- **HeatmapSession**: Session management with metadata
+- **HeatmapModels**: Models for positions, clicks, and trails
+- **HeatmapUtils**: Utilities for storage, URLs, and data manipulation
 
-### 📦 Release Inicial
-- Biblioteca Flutter completa para tracking de heatmap
-- Conversão do sistema JavaScript original para Dart
-- API limpa e bem documentada
-- Exemplo funcional de uso
-- Compatibilidade com servidor Node.js existente
+### 📦 Initial Release
+- Complete Flutter library for heatmap tracking
+- Conversion of the original JavaScript system to Dart
+- Clean and well-documented API
+- Functional usage example
+- Compatibility with existing Node.js server

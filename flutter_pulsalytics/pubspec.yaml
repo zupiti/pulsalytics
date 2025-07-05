@@ -2,12 +2,11 @@ name: flutter_pulsalytics
 version: 1.0.0
 
 description: >-
-  Plugin Flutter para rastreamento de interações do usuário via heatmap em aplicações web. Permite capturar movimentos do mouse, cliques e screenshots, enviando dados para backend e visualização em tempo real.
+  Flutter plugin for tracking user interactions via heatmap in web applications. Captures mouse movements, clicks, and screenshots, sending data to the backend and enabling real-time visualization.
 
-author: Nathan Oliveira <seu-email@exemplo.com>
-homepage: https://github.com/seu-usuario/flutter_pulsalytics
-repository: https://github.com/seu-usuario/flutter_pulsalytics
-issue_tracker: https://github.com/seu-usuario/flutter_pulsalytics/issues
+homepage: https://github.com/zupiti/pulsalytics
+repository: https://github.com/zupiti/pulsalytics
+issue_tracker: https://github.com/zupiti/pulsalytics/issues
 
 environment:
   sdk: ">=2.12.0 <4.0.0"
