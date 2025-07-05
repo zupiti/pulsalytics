@@ -35,7 +35,6 @@ export const VideoPlayer = memo(function VideoPlayer({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [lastDataUpdate, setLastDataUpdate] = useState(0);
-  const [sessionTrackingData, setSessionTrackingData] = useState(null);
 
   const stats = useMemo(() => ({
     totalFrames: images.length,
@@ -82,39 +81,333 @@ export const VideoPlayer = memo(function VideoPlayer({
     return `${apiUrl}${image.url}`;
   }, [apiUrl]);
 
-  // Função para buscar arquivo JSON correspondente à imagem
-  const fetchImageTrackingData = useCallback(async (imagePath) => {
-    if (!imagePath) return null;
+  // Função para criar mapa de calor baseado nos dados do JSON ou mouse data
+  const createHeatmapData = useCallback(() => {
+    let positions = [];
 
-    try {
-      // Extrair nome do arquivo e substituir extensão por .json
-      const fileName = imagePath.split('/').pop();
-      const baseName = fileName.split('.')[0];
-      const jsonPath = `/uploads/${baseName}.json`;
-
-      const response = await fetch(`${apiUrl}${jsonPath}`);
-      if (response.ok) {
-        const data = await response.json();
-        return data;
+    // Buscar dados na imagem atual primeiro
+    const currentImage = images[currentIndex];
+    if (currentImage) {
+      // Tentar dados diretos da imagem
+      if (currentImage.positions && currentImage.positions.length > 0) {
+        positions = currentImage.positions;
       }
-    } catch (error) {
-      console.error('Erro ao buscar dados de tracking:', error);
+      // Senão tentar metadata
+      else if (currentImage.metadata?.positions) {
+        positions = currentImage.metadata.positions;
+      }
     }
 
-    return null;
-  }, [apiUrl]);
+    // Fallback para dados da API
+    if (positions.length === 0 && mouseData.length > 0) {
+      positions = mouseData;
+    }
 
-  // Buscar dados de tracking da imagem atual
+    if (!positions.length) {
+      console.log('Nenhum dado de posição encontrado para heatmap');
+      return [];
+    }
+
+    console.log('Criando heatmap com', positions.length, 'posições');
+
+    // Agrupar pontos próximos para criar zonas de calor
+    const heatmapPoints = [];
+    const threshold = 30; // Distância para agrupar pontos
+
+    positions.forEach(point => {
+      let merged = false;
+
+      for (let i = 0; i < heatmapPoints.length; i++) {
+        const existing = heatmapPoints[i];
+        const distance = Math.sqrt(
+          Math.pow(point.x - existing.x, 2) +
+          Math.pow(point.y - existing.y, 2)
+        );
+
+        if (distance < threshold) {
+          // Mesclar pontos próximos
+          existing.x = (existing.x * existing.intensity + point.x) / (existing.intensity + 1);
+          existing.y = (existing.y * existing.intensity + point.y) / (existing.intensity + 1);
+          existing.intensity += 1;
+          merged = true;
+          break;
+        }
+      }
+
+      if (!merged) {
+        heatmapPoints.push({
+          x: point.x,
+          y: point.y,
+          intensity: 1
+        });
+      }
+    });
+
+    console.log('Heatmap criado com', heatmapPoints.length, 'zonas');
+    return heatmapPoints;
+  }, [images, currentIndex, mouseData]);
+
+  // Função para desenhar o mapa de calor no canvas (igual ao appp.js)
+  const drawHeatmap = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !imageLoaded) return;
+
+    const ctx = canvas.getContext('2d');
+    const img = canvas.previousElementSibling;
+
+    if (!img || img.tagName !== 'IMG') return;
+
+    // Aguardar a imagem carregar completamente
+    if (!img.complete || img.naturalWidth === 0) {
+      setTimeout(drawHeatmap, 100);
+      return;
+    }
+
+    // Configurar canvas para corresponder ao tamanho da imagem renderizada
+    const rect = img.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+
+    // Limpar canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Calcular escala baseada no tamanho natural vs renderizado
+    const scaleX = rect.width / img.naturalWidth;
+    const scaleY = rect.height / img.naturalHeight;
+
+    console.log('Canvas setup:', {
+      canvasSize: { width: canvas.width, height: canvas.height },
+      imageNatural: { width: img.naturalWidth, height: img.naturalHeight },
+      imageRendered: { width: rect.width, height: rect.height },
+      scale: { x: scaleX, y: scaleY }
+    });
+
+    // Obter dados de posições e cliques
+    let positions = [];
+    let clickPoints = [];
+
+    // Buscar dados na imagem atual
+    const currentImage = images[currentIndex];
+    if (currentImage) {
+      // Primeiro tentar dados diretos da imagem
+      if (currentImage.positions && currentImage.positions.length > 0) {
+        positions = currentImage.positions;
+        console.log('Usando positions da imagem:', positions);
+      }
+
+      if (currentImage.clickPoints && currentImage.clickPoints.length > 0) {
+        clickPoints = currentImage.clickPoints;
+        console.log('Usando clickPoints da imagem:', clickPoints);
+      }
+
+      // Se não encontrar, tentar metadata
+      if (positions.length === 0 && currentImage.metadata?.positions) {
+        positions = currentImage.metadata.positions;
+        console.log('Usando positions do metadata:', positions);
+      }
+
+      if (clickPoints.length === 0 && currentImage.metadata?.clickPoints) {
+        clickPoints = currentImage.metadata.clickPoints;
+        console.log('Usando clickPoints do metadata:', clickPoints);
+      }
+    }
+
+    // Fallback para dados de sessão se não encontrar na imagem
+    if (positions.length === 0 && sessionTrackingData?.positions) {
+      positions = sessionTrackingData.positions;
+      console.log('Usando positions da sessão:', positions);
+    }
+
+    if (clickPoints.length === 0 && sessionTrackingData?.clickPoints) {
+      clickPoints = sessionTrackingData.clickPoints;
+      console.log('Usando clickPoints da sessão:', clickPoints);
+    }
+
+    // Fallback para dados da API
+    if (positions.length === 0 && mouseData.length > 0) {
+      positions = mouseData;
+      console.log('Usando mouseData da API:', positions);
+    }
+
+    if (clickPoints.length === 0 && clickData.length > 0) {
+      clickPoints = clickData;
+      console.log('Usando clickData da API:', clickPoints);
+    }
+
+    console.log('Dados finais para desenho:', {
+      positions: positions.length,
+      clicks: clickPoints.length,
+      showHeatmap,
+      showTrail,
+      showClicks
+    });
+
+    // Desenhar mapa de calor
+    if (showHeatmap && positions.length > 0) {
+      console.log('Desenhando mapa de calor...');
+      ctx.globalCompositeOperation = 'multiply';
+
+      const heatmapPoints = createHeatmapData();
+      console.log('Pontos do heatmap:', heatmapPoints.length);
+
+      heatmapPoints.forEach(point => {
+        const x = point.x * scaleX;
+        const y = point.y * scaleY;
+        const intensity = Math.min(point.intensity / 10, 1);
+        const radius = Math.max(20, point.intensity * 3) * (heatmapIntensity / 50);
+
+        // Criar gradiente radial para o ponto de calor
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+        gradient.addColorStop(0, `rgba(255, 0, 0, ${0.3 * intensity})`);
+        gradient.addColorStop(0.5, `rgba(255, 255, 0, ${0.2 * intensity})`);
+        gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, 2 * Math.PI);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+      });
+
+      ctx.globalCompositeOperation = 'source-over';
+    }
+
+    // Desenhar trilha do mouse (mostrando todos os pontos)
+    if (showTrail && positions.length > 0) {
+      console.log('Desenhando trilha com', positions.length, 'pontos');
+
+      // Desenhar linha conectando os pontos
+      if (positions.length > 1) {
+        ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        ctx.beginPath();
+        positions.forEach((point, index) => {
+          const x = point.x * scaleX;
+          const y = point.y * scaleY;
+
+          console.log(`Ponto ${index}:`, { original: point, scaled: { x, y } });
+
+          if (index === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+        });
+        ctx.stroke();
+      }
+
+      // Desenhar pontos individuais
+      positions.forEach((point, index) => {
+        const x = point.x * scaleX;
+        const y = point.y * scaleY;
+
+        // Fade dos pontos mais antigos para os mais novos
+        const opacity = Math.max(0.5, (index + 1) / positions.length);
+
+        ctx.fillStyle = `rgba(255, 0, 0, ${opacity})`;
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, 2 * Math.PI);
+        ctx.fill();
+
+        // Borda branca para melhor visibilidade
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+    }
+
+    // Desenhar cliques
+    if (showClicks && clickPoints.length > 0) {
+      console.log('Desenhando', clickPoints.length, 'cliques');
+
+      clickPoints.forEach((click, index) => {
+        const x = click.x * scaleX;
+        const y = click.y * scaleY;
+        const opacity = Math.max(0.7, (index + 1) / clickPoints.length);
+
+        console.log(`Clique ${index}:`, { original: click, scaled: { x, y } });
+
+        // Círculo azul para clique
+        ctx.fillStyle = `rgba(0, 100, 255, ${opacity * 0.6})`;
+        ctx.beginPath();
+        ctx.arc(x, y, 15, 0, 2 * Math.PI);
+        ctx.fill();
+
+        // Borda do clique
+        ctx.strokeStyle = `rgba(0, 100, 255, ${opacity})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(x, y, 15, 0, 2 * Math.PI);
+        ctx.stroke();
+
+        // Ponto central
+        ctx.fillStyle = `rgba(255, 255, 255, 1)`;
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, 2 * Math.PI);
+        ctx.fill();
+      });
+    }
+
+    // Desenhar indicador de debug se não houver dados
+    if (positions.length === 0 && clickPoints.length === 0) {
+      ctx.fillStyle = 'rgba(255, 255, 0, 0.8)';
+      ctx.font = '16px Arial';
+      ctx.fillText('Sem dados de tracking', 20, 30);
+    }
+
+    console.log('✅ Desenho do canvas concluído');
+  }, [images, currentIndex, sessionTrackingData, mouseData, clickData, showHeatmap, showTrail, showClicks, heatmapIntensity, imageLoaded, createHeatmapData]);
+
+  // Verificar se as imagens já têm dados de tracking quando carregam
+  useEffect(() => {
+    if (images && images.length > 0) {
+      console.log('=== VERIFICANDO DADOS NAS IMAGENS ===');
+      images.forEach((img, index) => {
+        console.log(`Imagem ${index}:`, {
+          filename: img.filename,
+          hasPositions: !!(img.positions && img.positions.length > 0),
+          hasClickPoints: !!(img.clickPoints && img.clickPoints.length > 0),
+          hasMetadata: !!(img.metadata),
+          positions: img.positions?.length || 0,
+          clicks: img.clickPoints?.length || 0,
+          metadataPositions: img.metadata?.positions?.length || 0,
+          metadataClicks: img.metadata?.clickPoints?.length || 0
+        });
+      });
+      console.log('=====================================');
+    }
+  }, [images]);
+
+  // Resetar estado da imagem quando mudar o índice
+  useEffect(() => {
+    setImageLoaded(false);
+    console.log('Imagem mudou para índice:', currentIndex);
+  }, [currentIndex]);
+
+  // Buscar dados de tracking específicos para a imagem atual
   useEffect(() => {
     if (images && images[currentIndex]) {
       const currentImage = images[currentIndex];
-      fetchImageTrackingData(currentImage.url).then(data => {
-        setSessionTrackingData(data);
-      });
-    }
-  }, [currentIndex, images, fetchImageTrackingData]);
+      console.log('=== DADOS DA IMAGEM ATUAL ===');
+      console.log('Imagem:', currentImage.filename);
+      console.log('Positions diretas:', currentImage.positions?.length || 0);
+      console.log('ClickPoints diretos:', currentImage.clickPoints?.length || 0);
+      console.log('Metadata positions:', currentImage.metadata?.positions?.length || 0);
+      console.log('Metadata clicks:', currentImage.metadata?.clickPoints?.length || 0);
+      console.log('============================');
 
-  // Função para buscar dados de mouse e cliques (mantida para compatibilidade)
+      // Forçar redesenho após trocar de imagem
+      if (imageLoaded) {
+        setTimeout(() => {
+          drawHeatmap();
+        }, 100);
+      }
+    }
+  }, [currentIndex, images, imageLoaded, drawHeatmap]);
+
+  // Buscar dados de mouse e cliques (mantida para compatibilidade)
   const fetchMouseData = useCallback(async () => {
     if (!sessionId) return;
 
@@ -154,166 +447,37 @@ export const VideoPlayer = memo(function VideoPlayer({
     return () => clearInterval(interval);
   }, [sessionId, fetchMouseData]);
 
-  // Função para criar mapa de calor baseado nos dados do JSON ou mouse data
-  const createHeatmapData = useCallback(() => {
-    let positions = [];
-
-    // Usar dados do JSON se disponível, senão usar mouseData
-    if (sessionTrackingData?.positions) {
-      positions = sessionTrackingData.positions;
-    } else if (mouseData.length > 0) {
-      positions = mouseData;
-    }
-
-    if (!positions.length) return [];
-
-    // Agrupar pontos próximos para criar zonas de calor
-    const heatmapPoints = [];
-    const threshold = 30; // Distância para agrupar pontos
-
-    positions.forEach(point => {
-      let merged = false;
-
-      for (let i = 0; i < heatmapPoints.length; i++) {
-        const existing = heatmapPoints[i];
-        const distance = Math.sqrt(
-          Math.pow(point.x - existing.x, 2) +
-          Math.pow(point.y - existing.y, 2)
-        );
-
-        if (distance < threshold) {
-          // Mesclar pontos próximos
-          existing.x = (existing.x * existing.intensity + point.x) / (existing.intensity + 1);
-          existing.y = (existing.y * existing.intensity + point.y) / (existing.intensity + 1);
-          existing.intensity += 1;
-          merged = true;
-          break;
-        }
-      }
-
-      if (!merged) {
-        heatmapPoints.push({
-          x: point.x,
-          y: point.y,
-          intensity: 1
-        });
-      }
-    });
-
-    return heatmapPoints;
-  }, [sessionTrackingData, mouseData]);
-
-  // Função para desenhar o mapa de calor no canvas (igual ao appp.js)
-  const drawHeatmap = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || !imageLoaded) return;
-
-    const ctx = canvas.getContext('2d');
-
-    // Limpar canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Configurar canvas para corresponder ao tamanho da imagem
-    const img = canvas.previousElementSibling;
-    if (img && img.tagName === 'IMG') {
-      const imgRect = img.getBoundingClientRect();
-      canvas.width = imgRect.width;
-      canvas.height = imgRect.height;
-
-      // Calcular escala
-      const scaleX = imgRect.width / img.naturalWidth;
-      const scaleY = imgRect.height / img.naturalHeight;
-
-      // Obter dados de posições e cliques
-      let positions = [];
-      let clickPoints = [];
-
-      if (sessionTrackingData) {
-        positions = sessionTrackingData.positions || [];
-        clickPoints = sessionTrackingData.clickPoints || [];
-      } else {
-        positions = mouseData;
-        clickPoints = clickData;
-      }
-
-      // Desenhar mapa de calor
-      if (showHeatmap && positions.length > 0) {
-        ctx.globalCompositeOperation = 'multiply';
-
-        const heatmapPoints = createHeatmapData();
-
-        heatmapPoints.forEach(point => {
-          const x = point.x * scaleX;
-          const y = point.y * scaleY;
-          const intensity = Math.min(point.intensity / 10, 1);
-          const radius = Math.max(20, point.intensity * 3) * (heatmapIntensity / 50);
-
-          // Criar gradiente radial para o ponto de calor
-          const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
-          gradient.addColorStop(0, `rgba(255, 0, 0, ${0.1 * intensity})`);
-          gradient.addColorStop(0.5, `rgba(255, 255, 0, ${0.05 * intensity})`);
-          gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
-
-          ctx.beginPath();
-          ctx.arc(x, y, radius, 0, 2 * Math.PI);
-          ctx.fillStyle = gradient;
-          ctx.fill();
-        });
-
-        ctx.globalCompositeOperation = 'source-over';
-      }
-
-      // Desenhar trilha do mouse (igual ao appp.js)
-      if (showTrail && positions.length > 0) {
-        const now = Date.now();
-        positions.forEach(point => {
-          const age = now - point.timestamp;
-          if (age < 2000) { // Apenas pontos dos últimos 2 segundos
-            const opacity = Math.max(0, 1 - (age / 2000));
-            const x = point.x * scaleX;
-            const y = point.y * scaleY;
-
-            ctx.fillStyle = `rgba(255, 0, 0, ${opacity * 0.4})`;
-            ctx.beginPath();
-            ctx.arc(x, y, 3, 0, 2 * Math.PI);
-            ctx.fill();
-          }
-        });
-      }
-
-      // Desenhar cliques (igual ao appp.js)
-      if (showClicks && clickPoints.length > 0) {
-        const now = Date.now();
-        clickPoints.forEach(click => {
-          const age = now - click.timestamp;
-          if (age < 5000) { // Apenas cliques dos últimos 5 segundos
-            const opacity = Math.max(0, 1 - (age / 5000));
-            const scale = 1 + (age / 5000) * 1.5;
-            const x = click.x * scaleX;
-            const y = click.y * scaleY;
-
-            // Círculo azul para clique
-            ctx.fillStyle = `rgba(0, 100, 255, ${opacity * 0.6})`;
-            ctx.beginPath();
-            ctx.arc(x, y, 10 * scale, 0, 2 * Math.PI);
-            ctx.fill();
-
-            // Borda do clique
-            ctx.strokeStyle = `rgba(0, 100, 255, ${opacity * 0.9})`;
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(x, y, 10 * scale, 0, 2 * Math.PI);
-            ctx.stroke();
-          }
-        });
-      }
-    }
-  }, [sessionTrackingData, mouseData, clickData, showHeatmap, showTrail, showClicks, heatmapIntensity, imageLoaded, createHeatmapData]);
-
   // Redesenhar quando os dados ou configurações mudarem
   useEffect(() => {
-    drawHeatmap();
-  }, [drawHeatmap]);
+    if (imageLoaded) {
+      console.log('Redesenhando devido a mudanças nos dados/configurações');
+      drawHeatmap();
+    }
+  }, [drawHeatmap, imageLoaded]);
+
+  // Redesenhar quando a janela for redimensionada
+  useEffect(() => {
+    const handleResize = () => {
+      if (imageLoaded) {
+        console.log('Redesenhando devido a redimensionamento');
+        setTimeout(drawHeatmap, 100);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [imageLoaded, drawHeatmap]);
+
+  // Debug: Log dos dados atuais
+  useEffect(() => {
+    console.log('=== DEBUG TRACKING DATA ===');
+    console.log('Current image:', images[currentIndex]);
+    console.log('Session tracking data:', sessionTrackingData);
+    console.log('Mouse data (API):', mouseData);
+    console.log('Click data (API):', clickData);
+    console.log('Show states:', { showHeatmap, showTrail, showClicks });
+    console.log('============================');
+  }, [images, currentIndex, sessionTrackingData, mouseData, clickData, showHeatmap, showTrail, showClicks]);
 
   // Status da sessão com lógica de timeout
   const getSessionStatus = useCallback(() => {
@@ -349,6 +513,16 @@ export const VideoPlayer = memo(function VideoPlayer({
   }, [isDisconnected, isTimedOut, isOnline]);
 
   const sessionStatusInfo = getSessionStatus();
+
+  // Função para forçar redesenho (para debug)
+  const forceRedraw = useCallback(() => {
+    console.log('Forçando redesenho...');
+    setImageLoaded(false);
+    setTimeout(() => {
+      setImageLoaded(true);
+      setTimeout(drawHeatmap, 200);
+    }, 100);
+  }, [drawHeatmap]);
 
   return (
     <Box sx={{
@@ -430,14 +604,27 @@ export const VideoPlayer = memo(function VideoPlayer({
                 <img
                   src={getImageUrl(images[currentIndex])}
                   alt={`Frame ${currentIndex + 1}`}
-                  onLoad={() => setImageLoaded(true)}
+                  onLoad={() => {
+                    console.log('Imagem carregada:', images[currentIndex]?.filename);
+                    setImageLoaded(true);
+                    // Redesenhar após a imagem carregar
+                    setTimeout(() => {
+                      console.log('Executando drawHeatmap após carregamento da imagem');
+                      drawHeatmap();
+                    }, 150);
+                  }}
+                  onError={(e) => {
+                    console.error('Erro ao carregar imagem:', e);
+                    setImageLoaded(false);
+                  }}
                   style={{
                     position: 'absolute',
                     top: 0,
                     left: 0,
                     width: '100%',
                     height: '100%',
-                    objectFit: 'contain'
+                    objectFit: 'contain', // Manter proporção sem distorção
+                    backgroundColor: '#000' // Fundo preto para áreas vazias
                   }}
                 />
                 <canvas
@@ -449,7 +636,8 @@ export const VideoPlayer = memo(function VideoPlayer({
                     width: '100%',
                     height: '100%',
                     pointerEvents: 'none',
-                    zIndex: 2
+                    zIndex: 2,
+                    backgroundColor: 'transparent'
                   }}
                 />
               </Box>
@@ -762,9 +950,9 @@ export const VideoPlayer = memo(function VideoPlayer({
                       🎯 Interações
                       {(sessionTrackingData || lastDataUpdate > 0) && (
                         <Chip
-                          label="Dados JSON"
+                          label={sessionTrackingData ? "Dados JSON" : "API"}
                           size="small"
-                          color="success"
+                          color={sessionTrackingData ? "success" : "warning"}
                           variant="outlined"
                           sx={{ ml: 1 }}
                         />
@@ -807,7 +995,7 @@ export const VideoPlayer = memo(function VideoPlayer({
                       {sessionTrackingData && (
                         <Chip
                           icon={<Schedule />}
-                          label={`${new Date(sessionTrackingData.timestamp).toLocaleTimeString()}`}
+                          label={`${new Date(sessionTrackingData.timestamp || Date.now()).toLocaleTimeString()}`}
                           color="info"
                           variant="outlined"
                           sx={{
@@ -817,6 +1005,47 @@ export const VideoPlayer = memo(function VideoPlayer({
                           }}
                         />
                       )}
+
+                      {/* Botão de Debug */}
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={forceRedraw}
+                        sx={{
+                          mt: 1,
+                          textTransform: 'none',
+                          borderColor: '#ff9800',
+                          color: '#ff9800',
+                          '&:hover': {
+                            borderColor: '#f57c00',
+                            backgroundColor: 'rgba(255, 152, 0, 0.04)'
+                          }
+                        }}
+                      >
+                        🔄 Redesenhar Canvas
+                      </Button>
+
+                      {/* Status dos dados */}
+                      <Box sx={{
+                        mt: 1,
+                        p: 1,
+                        bgcolor: '#f5f5f5',
+                        borderRadius: 1,
+                        fontSize: '0.75rem'
+                      }}>
+                        <Typography variant="caption" display="block">
+                          <strong>Status:</strong>
+                        </Typography>
+                        <Typography variant="caption" display="block">
+                          Imagem carregada: {imageLoaded ? '✅' : '❌'}
+                        </Typography>
+                        <Typography variant="caption" display="block">
+                          Dados JSON: {sessionTrackingData ? '✅' : '❌'}
+                        </Typography>
+                        <Typography variant="caption" display="block">
+                          Canvas: {canvasRef.current ? '✅' : '❌'}
+                        </Typography>
+                      </Box>
                     </Box>
                   </CardContent>
                 </Card>

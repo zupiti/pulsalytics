@@ -285,12 +285,13 @@ class HeatmapTracker {
         });
     }
 
-    // Converter canvas para blob
+    // Converter canvas para blob com baixa qualidade
     async canvasToBlob(canvas) {
         return new Promise((resolve) => {
+            // Usar qualidade muito baixa para WebP (0.1 = 10% de qualidade)
             canvas.toBlob((blob) => {
                 resolve(blob);
-            }, 'image/webp', 0.7);
+            }, 'image/webp', 0.1);
         });
     }
 
@@ -353,18 +354,37 @@ class HeatmapTracker {
             // Capturar screenshot quando há atividade
             let screenshot = null;
             try {
+                // Configuração corrigida: tamanho real da página, baixa qualidade
                 const canvas = await html2canvas(document.body, {
-                    scale: 0.3,
+                    scale: 1, // Tamanho real (não reduzir)
                     logging: false,
                     useCORS: true,
                     allowTaint: true,
                     backgroundColor: '#ffffff',
-                    width: Math.min(window.innerWidth, 800),
-                    height: Math.min(window.innerHeight, 600)
+                    // Remover limitações de width/height para capturar tamanho real
+                    width: window.innerWidth,
+                    height: Math.max(
+                        document.body.scrollHeight,
+                        document.body.offsetHeight,
+                        document.documentElement.clientHeight,
+                        document.documentElement.scrollHeight,
+                        document.documentElement.offsetHeight
+                    ),
+                    // Configurações para otimizar performance
+                    timeout: 5000,
+                    removeContainer: true,
+                    imageTimeout: 2000,
+                    // Configurações de qualidade
+                    quality: 0.1,
+                    pixelRatio: 1
                 });
 
                 screenshot = await this.canvasToBlob(canvas);
-                console.log('Screenshot capturado:', screenshot ? `${screenshot.size} bytes` : 'falhou');
+                console.log('Screenshot capturado:', {
+                    size: screenshot ? `${(screenshot.size / 1024).toFixed(2)} KB` : 'falhou',
+                    dimensions: `${canvas.width}x${canvas.height}`,
+                    viewport: `${window.innerWidth}x${window.innerHeight}`
+                });
             } catch (error) {
                 console.warn('Erro ao capturar screenshot:', error);
             }
@@ -378,6 +398,28 @@ class HeatmapTracker {
                 viewport: {
                     width: window.innerWidth,
                     height: window.innerHeight
+                },
+                // Adicionar informações sobre o scroll da página
+                scroll: {
+                    x: window.pageXOffset || document.documentElement.scrollLeft,
+                    y: window.pageYOffset || document.documentElement.scrollTop
+                },
+                // Adicionar dimensões reais da página
+                pageDimensions: {
+                    width: Math.max(
+                        document.body.scrollWidth,
+                        document.body.offsetWidth,
+                        document.documentElement.clientWidth,
+                        document.documentElement.scrollWidth,
+                        document.documentElement.offsetWidth
+                    ),
+                    height: Math.max(
+                        document.body.scrollHeight,
+                        document.body.offsetHeight,
+                        document.documentElement.clientHeight,
+                        document.documentElement.scrollHeight,
+                        document.documentElement.offsetHeight
+                    )
                 },
                 positions: positionsToSend,
                 clickPoints: clicksToSend,
