@@ -1,6 +1,25 @@
 # Flutter Heatmap Tracker
 
-Um plugin Flutter para rastreamento de interações do usuário através de heatmaps em aplicações web.
+> **Atenção:** Para utilizar todas as funcionalidades desta biblioteca, é necessário:
+>
+> 1. Rodar o painel de administração (admin-ui):
+>    - Entre na pasta `admin-ui` e execute `npm install` e depois `npm start`.
+>    - O painel permite visualizar sessões, heatmaps e monitorar usuários em tempo real.
+> 2. Rodar o servidor de WebSocket:
+>    - Entre na pasta `heatmap-server` e execute `npm install` e depois `npm run websocket`.
+>    - Este servidor recebe dados em tempo real do plugin Flutter e os disponibiliza para o admin-ui.
+>
+> Ambos devem estar ativos para o monitoramento e visualização em tempo real.
+
+## Finalidade
+
+Esta biblioteca tem como objetivo rastrear interações de usuários em aplicações Flutter Web, gerando heatmaps, capturando cliques, movimentos do mouse e screenshots, e enviando esses dados para um servidor backend. O objetivo é fornecer insights detalhados sobre o comportamento do usuário, facilitando a análise de usabilidade e a identificação de pontos de interesse ou problemas na interface.
+
+## Como funciona?
+
+- O plugin coleta dados de interação do usuário (mouse, cliques, screenshots) e envia para o servidor via HTTP e WebSocket.
+- O servidor armazena e processa esses dados.
+- O admin-ui permite visualizar sessões ativas, heatmaps e estatísticas em tempo real.
 
 ## Funcionalidades
 
