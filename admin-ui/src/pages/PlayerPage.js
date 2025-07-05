@@ -298,7 +298,7 @@ export default function PlayerPage({
       isPlaying={isPlaying}
       currentIndex={currentImageIndex}
       playbackSpeed={playbackSpeed}
-      onPlayPause={onPlayPause}
+      onPlayPause={() => onPlayPause(images)}
       onStop={onStop}
       onIndexChange={onIndexChange}
       onSpeedChange={onSpeedChange}

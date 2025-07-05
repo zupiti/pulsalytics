@@ -176,7 +176,7 @@ function AppContent() {
   }, [fetchData]);
 
   // Handlers para o player
-  const handlePlayPause = useCallback(() => {
+  const handlePlayPause = useCallback((currentImages) => {
     if (isPlaying) {
       clearInterval(videoIntervalRef.current);
       setIsPlaying(false);
@@ -184,8 +184,10 @@ function AppContent() {
       setIsPlaying(true);
       videoIntervalRef.current = setInterval(() => {
         setCurrentImageIndex(prev => {
+          // Usar as imagens da sessão específica que está sendo reproduzida
+          const totalImages = currentImages ? currentImages.length : 0;
           // Se chegou no último frame, para a reprodução
-          if (prev >= (groups ? Object.values(groups)[0]?.length - 1 : 0)) {
+          if (prev >= totalImages - 1) {
             clearInterval(videoIntervalRef.current);
             setIsPlaying(false);
             return prev; // Mantém no último frame
@@ -194,7 +196,7 @@ function AppContent() {
         });
       }, playbackSpeed);
     }
-  }, [isPlaying, groups, playbackSpeed]);
+  }, [isPlaying, playbackSpeed]);
 
   const handleStop = useCallback(() => {
     clearInterval(videoIntervalRef.current);
