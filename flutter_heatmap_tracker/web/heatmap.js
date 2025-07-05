@@ -10,6 +10,20 @@ const config = window.HEATMAP_CONFIG || {
 
 console.log('Heatmap.js carregado com configurações:', config);
 
+// Conectar ao WebSocket do heatmap server de forma dinâmica
+const wsHeatmapUrl = (config.wsUrl || 'ws://localhost:3002');
+const wsHeatmap = new WebSocket(wsHeatmapUrl);
+
+wsHeatmap.onopen = function () {
+    console.log('WebSocket heatmap conectado em:', wsHeatmapUrl);
+};
+wsHeatmap.onerror = function (e) {
+    console.error('Erro no WebSocket heatmap:', e);
+};
+wsHeatmap.onclose = function () {
+    console.warn('WebSocket heatmap desconectado!');
+};
+
 // Objeto para armazenar posições do mouse por URL
 let heatmapData = {};
 let currentUrl = window.location.href;

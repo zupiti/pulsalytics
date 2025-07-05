@@ -1,460 +1,678 @@
 const config = window.HEATMAP_CONFIG || {
-    serverUrl: 'http://localhost:3001',
+    serverUrl: 'ws://localhost:3001',
     imageQuality: 0.1,
-    userId: null
+    userId: null,
+    batchSize: 20,
+    maxBufferSize: 100,
+    throttleMs: 16 // ~60fps
 };
 
-let heatmapData = {};
-let currentUrl = window.location.href;
-let lastCapturedUrl = currentUrl;
-let trailPoints = [];
-let clickPoints = [];
-let lastMousePosition = null;
-let isMouseInFocus = false;
-let fastCaptureTimer = null;
-let uploadQueue = [];
-let isUploading = false;
-let mouseBuffer = [];
-let bufferTimer = null;
+// Performance optimizations
+const RAF = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
+const CANCEL_RAF = window.cancelAnimationFrame || window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame;
 
-function createSafeFilename(url) {
-    return url.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50).replace(/_+/g, '_').replace(/^_|_$/g, '');
-}
+class PerformantHeatmapTracker {
+    constructor() {
+        this.heatmapData = new Map();
+        this.currentUrl = window.location.href;
+        this.lastCapturedUrl = this.currentUrl;
+        this.sessionId = this.getSessionId();
 
-function getSessionId() {
-    let sessionId = sessionStorage.getItem('heatmapSessionId');
-    if (!sessionId) {
-        const userPrefix = config.userId ? `user_${config.userId}` : createSafeFilename(window.location.origin + window.location.pathname);
-        sessionId = `${userPrefix}_${Math.random().toString(36).substr(2, 6)}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
-        sessionStorage.setItem('heatmapSessionId', sessionId);
+        // Optimized buffers
+        this.mouseBuffer = [];
+        this.clickBuffer = [];
+        this.trailPoints = [];
+
+        // Performance tracking
+        this.lastMousePosition = null;
+        this.isMouseInFocus = false;
+        this.rafId = null;
+        this.lastMouseTime = 0;
+        this.lastFlushTime = 0;
+
+        // WebSocket connection
+        this.ws = null;
+        this.wsReconnectAttempts = 0;
+        this.wsMaxReconnectAttempts = 5;
+        this.wsReconnectDelay = 1000;
+        this.messageQueue = [];
+        this.isConnected = false;
+
+        // Timers
+        this.captureTimer = null;
+        this.cleanupTimer = null;
+        this.bufferFlushTimer = null;
+
+        // Canvas optimization
+        this.canvasPool = [];
+        this.maxCanvasPool = 3;
+
+        this.init();
     }
-    return sessionId;
-}
 
-const sessionId = getSessionId();
+    init() {
+        this.connectWebSocket();
+        this.initializeUrlData(this.currentUrl);
+        this.setupEventListeners();
+        this.startCapture();
+        this.startCleanup();
+        this.setupVisibilityHandlers();
+    }
 
-function initializeUrlData(url) {
-    if (!heatmapData[url]) {
-        heatmapData[url] = {
-            positions: [],
-            timestamp: Date.now()
+    // WebSocket Management
+    connectWebSocket() {
+        try {
+            this.ws = new WebSocket(config.serverUrl);
+
+            this.ws.onopen = () => {
+                console.log('WebSocket connected');
+                this.isConnected = true;
+                this.wsReconnectAttempts = 0;
+                this.sendQueuedMessages();
+                this.sendSessionStart();
+            };
+
+            this.ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    this.handleWebSocketMessage(data);
+                } catch (error) {
+                    console.warn('Invalid WebSocket message:', error);
+                }
+            };
+
+            this.ws.onclose = () => {
+                console.log('WebSocket disconnected');
+                this.isConnected = false;
+                this.scheduleReconnect();
+            };
+
+            this.ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                this.isConnected = false;
+            };
+
+        } catch (error) {
+            console.error('Failed to create WebSocket:', error);
+            this.scheduleReconnect();
+        }
+    }
+
+    scheduleReconnect() {
+        if (this.wsReconnectAttempts < this.wsMaxReconnectAttempts) {
+            this.wsReconnectAttempts++;
+            const delay = this.wsReconnectDelay * Math.pow(2, this.wsReconnectAttempts - 1);
+            setTimeout(() => this.connectWebSocket(), delay);
+        }
+    }
+
+    sendWebSocketMessage(data) {
+        if (this.isConnected && this.ws.readyState === WebSocket.OPEN) {
+            try {
+                this.ws.send(JSON.stringify(data));
+            } catch (error) {
+                console.error('Failed to send WebSocket message:', error);
+                this.messageQueue.push(data);
+            }
+        } else {
+            this.messageQueue.push(data);
+        }
+    }
+
+    sendQueuedMessages() {
+        while (this.messageQueue.length > 0 && this.isConnected) {
+            const message = this.messageQueue.shift();
+            this.sendWebSocketMessage(message);
+        }
+    }
+
+    handleWebSocketMessage(data) {
+        switch (data.type) {
+            case 'ack':
+                // Message acknowledged
+                break;
+            case 'config_update':
+                this.updateConfig(data.config);
+                break;
+            case 'ping':
+                this.sendWebSocketMessage({ type: 'pong', timestamp: Date.now() });
+                break;
+        }
+    }
+
+    // Session Management
+    getSessionId() {
+        let sessionId = sessionStorage.getItem('heatmapSessionId');
+        if (!sessionId) {
+            const userPrefix = config.userId ? `user_${config.userId}` : this.createSafeFilename(window.location.origin + window.location.pathname);
+            sessionId = `${userPrefix}_${this.generateId()}_${Date.now()}_${this.generateId(4)}`;
+            sessionStorage.setItem('heatmapSessionId', sessionId);
+        }
+        return sessionId;
+    }
+
+    generateId(length = 6) {
+        return Math.random().toString(36).substr(2, length);
+    }
+
+    createSafeFilename(url) {
+        return url.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50).replace(/_+/g, '_').replace(/^_|_$/g, '');
+    }
+
+    sendSessionStart() {
+        this.sendWebSocketMessage({
+            type: 'session_start',
+            sessionId: this.sessionId,
+            userId: config.userId,
+            url: this.currentUrl,
+            timestamp: Date.now(),
+            viewport: {
+                width: window.innerWidth,
+                height: window.innerHeight
+            }
+        });
+    }
+
+    // Data Management
+    initializeUrlData(url) {
+        if (!this.heatmapData.has(url)) {
+            this.heatmapData.set(url, {
+                positions: [],
+                timestamp: Date.now()
+            });
+        }
+    }
+
+    cleanupOldData() {
+        const now = Date.now();
+        const maxAge = 12 * 60 * 60 * 1000; // 12 hours
+
+        for (const [url, data] of this.heatmapData.entries()) {
+            if (now - data.timestamp > maxAge) {
+                this.heatmapData.delete(url);
+            }
+        }
+    }
+
+    // Optimized Mouse Tracking
+    setupEventListeners() {
+        // Throttled mouse tracking
+        document.addEventListener('mousemove', this.throttle(this.handleMouseMove.bind(this), config.throttleMs));
+        document.addEventListener('click', this.handleClick.bind(this));
+        document.addEventListener('mouseleave', () => { this.isMouseInFocus = false; });
+        document.addEventListener('mouseenter', () => { this.isMouseInFocus = true; });
+
+        // URL change detection
+        this.urlCheckTimer = setInterval(() => this.checkUrlChange(), 400);
+    }
+
+    throttle(func, limit) {
+        let inThrottle;
+        return function (...args) {
+            if (!inThrottle) {
+                func.apply(this, args);
+                inThrottle = true;
+                setTimeout(() => inThrottle = false, limit);
+            }
         };
     }
-}
 
-function cleanupOldData() {
-    const now = Date.now();
-    const maxAge = 12 * 60 * 60 * 1000;
-    Object.keys(heatmapData).forEach(url => {
-        if (now - heatmapData[url].timestamp > maxAge) {
-            delete heatmapData[url];
-        }
-    });
-}
+    handleMouseMove(e) {
+        const now = performance.now();
 
-function flushMouseBuffer() {
-    if (mouseBuffer.length === 0) return;
-    
-    const now = Date.now();
-    mouseBuffer.forEach(pos => {
-        if (!heatmapData[currentUrl]) {
-            initializeUrlData(currentUrl);
-        }
-        heatmapData[currentUrl].positions.push(pos);
-    });
-    
-    if (heatmapData[currentUrl].positions.length > 800) {
-        heatmapData[currentUrl].positions = heatmapData[currentUrl].positions.slice(-600);
-    }
-    
-    heatmapData[currentUrl].timestamp = now;
-    mouseBuffer = [];
-}
+        // Update mouse position
+        this.lastMousePosition = { x: e.clientX, y: e.clientY };
+        this.isMouseInFocus = true;
+        this.lastMouseTime = now;
 
-function setupMouseTracking() {
-    document.addEventListener('mousemove', function (e) {
-        const now = Date.now();
-        
-        lastMousePosition = { x: e.clientX, y: e.clientY };
-        isMouseInFocus = true;
-        
-        trailPoints.push({
+        // Add to trail (optimized)
+        this.trailPoints.push({
             x: e.clientX,
             y: e.clientY,
             timestamp: now,
-            id: Math.random().toString(36).substr(2, 9)
+            id: this.generateId()
         });
-        
-        if (trailPoints.length > 20) {
-            trailPoints = trailPoints.slice(-15);
+
+        // Keep trail size optimal
+        if (this.trailPoints.length > 20) {
+            this.trailPoints = this.trailPoints.slice(-15);
         }
-        
-        mouseBuffer.push({
+
+        // Buffer mouse data
+        this.mouseBuffer.push({
             x: e.clientX,
             y: e.clientY,
             timestamp: now
         });
-        
-        if (mouseBuffer.length >= 10) {
-            flushMouseBuffer();
-        }
-        
-        if (bufferTimer) clearTimeout(bufferTimer);
-        bufferTimer = setTimeout(flushMouseBuffer, 100);
-        
-        const nowUrl = window.location.href;
-        if (nowUrl !== currentUrl) {
-            currentUrl = nowUrl;
-            initializeUrlData(currentUrl);
-        }
-    });
 
-    document.addEventListener('mouseleave', () => { isMouseInFocus = false; });
-    document.addEventListener('mouseenter', () => { isMouseInFocus = true; });
-}
+        // Auto-flush when buffer is full
+        if (this.mouseBuffer.length >= config.batchSize) {
+            this.flushMouseBuffer();
+        }
 
-function setupClickTracking() {
-    document.addEventListener('click', function (e) {
-        const now = Date.now();
-        clickPoints.push({
+        // Schedule flush if not already scheduled
+        if (!this.bufferFlushTimer) {
+            this.bufferFlushTimer = setTimeout(() => {
+                this.flushMouseBuffer();
+                this.bufferFlushTimer = null;
+            }, 100);
+        }
+
+        // Check URL change
+        this.checkUrlChange();
+    }
+
+    handleClick(e) {
+        const now = performance.now();
+
+        this.clickBuffer.push({
             x: e.clientX,
             y: e.clientY,
             timestamp: now,
-            id: Math.random().toString(36).substr(2, 9)
-        });
-        
-        if (clickPoints.length > 10) {
-            clickPoints = clickPoints.slice(-8);
-        }
-    });
-}
-
-function processUploadQueue() {
-    if (isUploading || uploadQueue.length === 0) return;
-    
-    isUploading = true;
-    const { blob, filename } = uploadQueue.shift();
-    
-    uploadImageToServer(blob, filename).finally(() => {
-        isUploading = false;
-        setTimeout(processUploadQueue, 50);
-    });
-}
-
-function startFastCapture() {
-    fastCaptureTimer = setInterval(() => {
-        if (isMouseInFocus && lastMousePosition && uploadQueue.length < 3) {
-            takeScreenshotAtPosition(lastMousePosition);
-        }
-    }, 800);
-}
-
-async function takeScreenshotAtPosition(position) {
-    const captureUrl = window.location.href;
-    if (captureUrl !== lastCapturedUrl) {
-        lastCapturedUrl = captureUrl;
-        initializeUrlData(captureUrl);
-    }
-
-    if (!heatmapData[captureUrl] || heatmapData[captureUrl].positions.length === 0) return;
-
-    const positions = heatmapData[captureUrl].positions;
-
-    try {
-        const canvas = await html2canvas(document.body, {
-            useCORS: true,
-            allowTaint: true,
-            scale: 0.4,
-            logging: false,
-            removeContainer: true,
-            backgroundColor: '#ffffff',
-            optimizeForSpeed: true,
-            width: Math.min(window.innerWidth, 1600),
-            height: Math.min(window.innerHeight, 900)
+            id: this.generateId()
         });
 
-        const resizedCanvas = resizeCanvas(canvas, 1600, 900);
-        const finalCanvas = drawHeatmapOnImage(resizedCanvas, positions);
-        addUrlInfo(finalCanvas, captureUrl, positions.length);
+        // Keep click buffer size optimal
+        if (this.clickBuffer.length > 10) {
+            this.clickBuffer = this.clickBuffer.slice(-8);
+        }
 
-        const { blob, format } = await compressImage(finalCanvas, config.imageQuality);
-        const urlInfo = createSafeFilename(new URL(captureUrl).pathname || 'root');
-        const filename = `heatmap_fast_${sessionId}_${urlInfo}_${Date.now()}.${format}`;
-
-        uploadQueue.push({ blob, filename });
-        processUploadQueue();
-    } catch (error) {
-        
-    }
-}
-
-function drawHeatmapOnImage(imageCanvas, positions) {
-    const ctx = imageCanvas.getContext('2d');
-    ctx.globalCompositeOperation = 'multiply';
-
-    const groupedPositions = groupNearbyPositions(positions, 12);
-    for (const pos of groupedPositions) {
-        const intensity = Math.min(pos.count / 8, 1);
-        const radius = Math.min(12 + pos.count * 1.5, 25);
-        const gradient = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, radius);
-        gradient.addColorStop(0, `rgba(255,0,0,${0.08 * intensity})`);
-        gradient.addColorStop(0.5, `rgba(255,255,0,${0.04 * intensity})`);
-        gradient.addColorStop(1, 'rgba(255,0,0,0)');
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI);
-        ctx.fillStyle = gradient;
-        ctx.fill();
+        // Send click data immediately
+        this.sendClickData();
     }
 
-    ctx.globalCompositeOperation = 'source-over';
+    sendClickData() {
+        if (this.clickBuffer.length === 0) return;
 
-    if (trailPoints.length > 0) {
-        const now = Date.now();
-        trailPoints.forEach(point => {
-            const age = now - point.timestamp;
-            if (age < 1500) {
-                const opacity = Math.max(0, 1 - (age / 1500));
-                ctx.fillStyle = `rgba(255, 0, 0, ${opacity * 0.3})`;
-                ctx.beginPath();
-                ctx.arc(point.x, point.y, 2, 0, 2 * Math.PI);
-                ctx.fill();
+        this.sendWebSocketMessage({
+            type: 'click_data',
+            sessionId: this.sessionId,
+            url: this.currentUrl,
+            clicks: [...this.clickBuffer],
+            timestamp: Date.now()
+        });
+    }
+
+    flushMouseBuffer() {
+        if (this.mouseBuffer.length === 0) return;
+
+        const urlData = this.heatmapData.get(this.currentUrl);
+        if (!urlData) {
+            this.initializeUrlData(this.currentUrl);
+        }
+
+        // Add to heatmap data
+        const data = this.heatmapData.get(this.currentUrl);
+        data.positions.push(...this.mouseBuffer);
+
+        // Optimize memory usage
+        if (data.positions.length > config.maxBufferSize) {
+            data.positions = data.positions.slice(-Math.floor(config.maxBufferSize * 0.75));
+        }
+
+        data.timestamp = Date.now();
+
+        // Send mouse data via WebSocket
+        this.sendWebSocketMessage({
+            type: 'mouse_data',
+            sessionId: this.sessionId,
+            url: this.currentUrl,
+            positions: [...this.mouseBuffer],
+            timestamp: Date.now()
+        });
+
+        // Clear buffer
+        this.mouseBuffer = [];
+        this.lastFlushTime = performance.now();
+    }
+
+    checkUrlChange() {
+        const nowUrl = window.location.href;
+        if (nowUrl !== this.currentUrl) {
+            this.currentUrl = nowUrl;
+            this.initializeUrlData(this.currentUrl);
+
+            // Send URL change event
+            this.sendWebSocketMessage({
+                type: 'url_change',
+                sessionId: this.sessionId,
+                oldUrl: this.lastCapturedUrl,
+                newUrl: this.currentUrl,
+                timestamp: Date.now()
+            });
+        }
+    }
+
+    // Optimized Canvas Operations
+    getCanvasFromPool() {
+        return this.canvasPool.pop() || document.createElement('canvas');
+    }
+
+    returnCanvasToPool(canvas) {
+        if (this.canvasPool.length < this.maxCanvasPool) {
+            // Clear canvas
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            this.canvasPool.push(canvas);
+        }
+    }
+
+    async takeScreenshot() {
+        const captureUrl = this.currentUrl;
+        const urlData = this.heatmapData.get(captureUrl);
+
+        if (!urlData || urlData.positions.length === 0) return;
+
+        try {
+            // Use html2canvas with optimized settings
+            const canvas = await html2canvas(document.body, {
+                useCORS: true,
+                allowTaint: true,
+                scale: 0.3, // Reduced scale for better performance
+                logging: false,
+                removeContainer: true,
+                backgroundColor: '#ffffff',
+                optimizeForSpeed: true,
+                width: Math.min(window.innerWidth, 1400),
+                height: Math.min(window.innerHeight, 800)
+            });
+
+            const processedCanvas = this.processCanvas(canvas, urlData.positions);
+            const imageData = await this.canvasToImageData(processedCanvas);
+
+            // Send via WebSocket
+            this.sendWebSocketMessage({
+                type: 'screenshot',
+                sessionId: this.sessionId,
+                url: captureUrl,
+                imageData: imageData,
+                positions: urlData.positions.length,
+                timestamp: Date.now(),
+                viewport: {
+                    width: window.innerWidth,
+                    height: window.innerHeight
+                }
+            });
+
+            this.returnCanvasToPool(processedCanvas);
+
+        } catch (error) {
+            console.error('Screenshot failed:', error);
+        }
+    }
+
+    processCanvas(sourceCanvas, positions) {
+        const canvas = this.getCanvasFromPool();
+        const ctx = canvas.getContext('2d');
+
+        // Resize canvas
+        const maxWidth = 1400;
+        const maxHeight = 800;
+        const ratio = Math.min(maxWidth / sourceCanvas.width, maxHeight / sourceCanvas.height);
+
+        canvas.width = sourceCanvas.width * ratio;
+        canvas.height = sourceCanvas.height * ratio;
+
+        // Draw source image
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(sourceCanvas, 0, 0, canvas.width, canvas.height);
+
+        // Draw heatmap
+        this.drawHeatmap(ctx, positions, ratio);
+
+        // Add metadata
+        this.addMetadata(ctx, this.currentUrl, positions.length);
+
+        return canvas;
+    }
+
+    drawHeatmap(ctx, positions, scale = 1) {
+        ctx.globalCompositeOperation = 'multiply';
+
+        const groupedPositions = this.groupNearbyPositions(positions, 12);
+
+        for (const pos of groupedPositions) {
+            const x = pos.x * scale;
+            const y = pos.y * scale;
+            const intensity = Math.min(pos.count / 8, 1);
+            const radius = Math.min(12 + pos.count * 1.5, 25) * scale;
+
+            const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+            gradient.addColorStop(0, `rgba(255,0,0,${0.08 * intensity})`);
+            gradient.addColorStop(0.5, `rgba(255,255,0,${0.04 * intensity})`);
+            gradient.addColorStop(1, 'rgba(255,0,0,0)');
+
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, 2 * Math.PI);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+        }
+
+        ctx.globalCompositeOperation = 'source-over';
+
+        // Draw trail and clicks
+        this.drawTrailAndClicks(ctx, scale);
+    }
+
+    drawTrailAndClicks(ctx, scale) {
+        const now = performance.now();
+
+        // Draw trail
+        if (this.trailPoints.length > 0) {
+            this.trailPoints.forEach(point => {
+                const age = now - point.timestamp;
+                if (age < 1500) {
+                    const opacity = Math.max(0, 1 - (age / 1500));
+                    ctx.fillStyle = `rgba(255, 0, 0, ${opacity * 0.3})`;
+                    ctx.beginPath();
+                    ctx.arc(point.x * scale, point.y * scale, 2 * scale, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            });
+        }
+
+        // Draw clicks
+        if (this.clickBuffer.length > 0) {
+            this.clickBuffer.forEach(click => {
+                const age = now - click.timestamp;
+                if (age < 3000) {
+                    const opacity = Math.max(0, 1 - (age / 3000));
+                    const clickScale = (1 + (age / 3000) * 1.2) * scale;
+
+                    ctx.fillStyle = `rgba(0, 100, 255, ${opacity * 0.5})`;
+                    ctx.beginPath();
+                    ctx.arc(click.x * scale, click.y * scale, 8 * clickScale, 0, 2 * Math.PI);
+                    ctx.fill();
+
+                    ctx.strokeStyle = `rgba(0, 100, 255, ${opacity * 0.8})`;
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.arc(click.x * scale, click.y * scale, 8 * clickScale, 0, 2 * Math.PI);
+                    ctx.stroke();
+                }
+            });
+        }
+    }
+
+    groupNearbyPositions(positions, threshold = 12) {
+        const groups = [];
+        const processedPositions = positions.slice(-200); // Limit for performance
+
+        for (const pos of processedPositions) {
+            let added = false;
+
+            for (const group of groups) {
+                const distance = Math.sqrt(
+                    Math.pow(pos.x - group.x, 2) + Math.pow(pos.y - group.y, 2)
+                );
+
+                if (distance < threshold) {
+                    group.x = (group.x * group.count + pos.x) / (group.count + 1);
+                    group.y = (group.y * group.count + pos.y) / (group.count + 1);
+                    group.count++;
+                    added = true;
+                    break;
+                }
             }
+
+            if (!added) {
+                groups.push({ x: pos.x, y: pos.y, count: 1 });
+            }
+        }
+
+        return groups;
+    }
+
+    addMetadata(ctx, url, positionCount) {
+        const padding = 6;
+        const fontSize = 9;
+        ctx.font = `${fontSize}px Arial`;
+
+        const urlText = url.length > 45 ? url.substring(0, 42) + '...' : url;
+        const countText = `Pts: ${positionCount}`;
+        const dateText = new Date().toLocaleTimeString();
+        const userText = config.userId ? `User: ${config.userId}` : 'User: anônimo';
+
+        const maxWidth = Math.max(
+            ctx.measureText(urlText).width,
+            ctx.measureText(countText).width,
+            ctx.measureText(dateText).width,
+            ctx.measureText(userText).width
+        );
+
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.fillRect(padding, padding, maxWidth + padding * 2, (fontSize + 1.5) * 4 + padding);
+
+        ctx.fillStyle = 'white';
+        ctx.fillText(urlText, padding * 2, padding * 2 + fontSize);
+        ctx.fillText(countText, padding * 2, padding * 2 + fontSize * 2 + 1.5);
+        ctx.fillText(dateText, padding * 2, padding * 2 + fontSize * 3 + 3);
+        ctx.fillText(userText, padding * 2, padding * 2 + fontSize * 4 + 4.5);
+    }
+
+    async canvasToImageData(canvas) {
+        return new Promise((resolve) => {
+            canvas.toBlob((blob) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    // Convert to base64 and remove data URL prefix
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.readAsDataURL(blob);
+            }, 'image/webp', config.imageQuality);
         });
     }
 
-    if (clickPoints.length > 0) {
-        const now = Date.now();
-        clickPoints.forEach(click => {
-            const age = now - click.timestamp;
-            if (age < 3000) {
-                const opacity = Math.max(0, 1 - (age / 3000));
-                const scale = 1 + (age / 3000) * 1.2;
-
-                ctx.fillStyle = `rgba(0, 100, 255, ${opacity * 0.5})`;
-                ctx.beginPath();
-                ctx.arc(click.x, click.y, 8 * scale, 0, 2 * Math.PI);
-                ctx.fill();
-
-                ctx.strokeStyle = `rgba(0, 100, 255, ${opacity * 0.8})`;
-                ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                ctx.arc(click.x, click.y, 8 * scale, 0, 2 * Math.PI);
-                ctx.stroke();
+    // Lifecycle Management
+    startCapture() {
+        this.captureTimer = setInterval(() => {
+            if (this.isMouseInFocus && this.heatmapData.get(this.currentUrl)?.positions.length > 0) {
+                this.takeScreenshot();
             }
-        });
+        }, 12000);
     }
 
-    return imageCanvas;
-}
-
-function groupNearbyPositions(positions, threshold = 12) {
-    const groups = [];
-    for (const pos of positions) {
-        let added = false;
-        for (const group of groups) {
-            const distance = Math.sqrt(
-                Math.pow(pos.x - group.x, 2) + Math.pow(pos.y - group.y, 2)
-            );
-            if (distance < threshold) {
-                group.x = (group.x * group.count + pos.x) / (group.count + 1);
-                group.y = (group.y * group.count + pos.y) / (group.count + 1);
-                group.count++;
-                added = true;
-                break;
-            }
-        }
-        if (!added) {
-            groups.push({ x: pos.x, y: pos.y, count: 1 });
-        }
+    startCleanup() {
+        this.cleanupTimer = setInterval(() => {
+            this.cleanupOldData();
+        }, 30 * 60 * 1000); // 30 minutes
     }
-    return groups;
-}
 
-function addUrlInfo(canvas, url, positionCount) {
-    const ctx = canvas.getContext('2d');
-    const padding = 6;
-    const fontSize = 9;
-    ctx.font = `${fontSize}px Arial`;
-    const urlText = url.length > 45 ? url.substring(0, 42) + '...' : url;
-    const countText = `Pts: ${positionCount}`;
-    const dateText = new Date().toLocaleTimeString();
-    const userText = config.userId ? `User: ${config.userId}` : 'User: anônimo';
-
-    const maxWidth = Math.max(
-        ctx.measureText(urlText).width,
-        ctx.measureText(countText).width,
-        ctx.measureText(dateText).width,
-        ctx.measureText(userText).width
-    );
-
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.fillRect(padding, padding, maxWidth + padding * 2, (fontSize + 1.5) * 4 + padding);
-    ctx.fillStyle = 'white';
-    ctx.fillText(urlText, padding * 2, padding * 2 + fontSize);
-    ctx.fillText(countText, padding * 2, padding * 2 + fontSize * 2 + 1.5);
-    ctx.fillText(dateText, padding * 2, padding * 2 + fontSize * 3 + 3);
-    ctx.fillText(userText, padding * 2, padding * 2 + fontSize * 4 + 4.5);
-
-    return canvas;
-}
-
-function compressImage(canvas, quality = 0.1) {
-    return new Promise((resolve) => {
-        canvas.toBlob(function (webpBlob) {
-            if (webpBlob) {
-                resolve({ blob: webpBlob, format: 'webp' });
+    setupVisibilityHandlers() {
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                this.pauseCapture();
             } else {
-                canvas.toBlob(function (jpegBlob) {
-                    resolve({ blob: jpegBlob, format: 'jpeg' });
-                }, 'image/jpeg', quality);
+                this.resumeCapture();
             }
-        }, 'image/webp', quality);
-    });
-}
-
-function resizeCanvas(sourceCanvas, maxWidth = 1600, maxHeight = 900) {
-    const ratio = Math.min(maxWidth / sourceCanvas.width, maxHeight / sourceCanvas.height);
-    if (ratio >= 1) return sourceCanvas;
-    const newCanvas = document.createElement('canvas');
-    const ctx = newCanvas.getContext('2d');
-    newCanvas.width = sourceCanvas.width * ratio;
-    newCanvas.height = sourceCanvas.height * ratio;
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(sourceCanvas, 0, 0, newCanvas.width, newCanvas.height);
-    return newCanvas;
-}
-
-async function uploadImageToServer(blob, filename) {
-    const formData = new FormData();
-    formData.append('image', blob, filename);
-
-    if (config.userId) {
-        formData.append('userId', config.userId);
-    }
-
-    try {
-        const response = await fetch(`${config.serverUrl}/upload`, {
-            method: 'POST',
-            body: formData
         });
-        return response.ok;
-    } catch (e) {
-        return false;
-    }
-}
 
-async function takeScreenshot() {
-    const captureUrl = window.location.href;
-    if (captureUrl !== lastCapturedUrl) {
-        lastCapturedUrl = captureUrl;
-        initializeUrlData(captureUrl);
-    }
-    if (!heatmapData[captureUrl] || heatmapData[captureUrl].positions.length === 0) return;
-
-    const positions = heatmapData[captureUrl].positions;
-    try {
-        const canvas = await html2canvas(document.body, {
-            useCORS: true,
-            allowTaint: true,
-            scale: 0.4,
-            logging: false,
-            removeContainer: true,
-            backgroundColor: '#ffffff',
-            optimizeForSpeed: true,
-            width: Math.min(window.innerWidth, 1600),
-            height: Math.min(window.innerHeight, 900)
+        window.addEventListener('beforeunload', () => {
+            this.sendSessionEnd();
         });
-        const resizedCanvas = resizeCanvas(canvas, 1600, 900);
-        const finalCanvas = drawHeatmapOnImage(resizedCanvas, positions);
-        addUrlInfo(finalCanvas, captureUrl, positions.length);
-        const { blob, format } = await compressImage(finalCanvas, config.imageQuality);
-        const urlInfo = createSafeFilename(new URL(captureUrl).pathname || 'root');
-        const filename = `heatmap_${sessionId}_${urlInfo}_${Date.now()}.${format}`;
-        
-        uploadQueue.push({ blob, filename });
-        processUploadQueue();
-    } catch (error) {
-        
-    }
-}
 
-initializeUrlData(currentUrl);
-setupMouseTracking();
-setupClickTracking();
-startFastCapture();
-
-let lastUrl = window.location.href;
-setInterval(() => {
-    const nowUrl = window.location.href;
-    if (nowUrl !== lastUrl) {
-        lastUrl = nowUrl;
-        currentUrl = nowUrl;
-        initializeUrlData(currentUrl);
-    }
-}, 400);
-
-setInterval(takeScreenshot, 12000);
-setInterval(cleanupOldData, 30 * 60 * 1000);
-
-async function sendSessionEndEvent() {
-    try {
-        const formData = new FormData();
-        formData.append('sessionId', sessionId);
-        formData.append('eventType', 'session_end');
-        formData.append('timestamp', Date.now().toString());
-
-        if (config.userId) {
-            formData.append('userId', config.userId);
-        }
-
-        await fetch(`${config.serverUrl}/session-event`, {
-            method: 'POST',
-            body: formData
+        window.addEventListener('pagehide', () => {
+            this.sendSessionEnd();
         });
-    } catch (error) {
-        
-    }
-}
-
-window.addEventListener('beforeunload', function (e) {
-    const params = new URLSearchParams({
-        sessionId: sessionId,
-        eventType: 'session_end',
-        timestamp: Date.now()
-    });
-
-    if (config.userId) {
-        params.append('userId', config.userId);
     }
 
-    navigator.sendBeacon(`${config.serverUrl}/session-event`, params);
-});
-
-document.addEventListener('visibilitychange', function () {
-    if (document.hidden) {
-        if (fastCaptureTimer) {
-            clearInterval(fastCaptureTimer);
-            fastCaptureTimer = null;
-        }
-    } else {
-        if (!fastCaptureTimer) {
-            startFastCapture();
+    pauseCapture() {
+        if (this.captureTimer) {
+            clearInterval(this.captureTimer);
+            this.captureTimer = null;
         }
     }
-});
 
-window.addEventListener('pagehide', function () {
-    sendSessionEndEvent();
-});
+    resumeCapture() {
+        if (!this.captureTimer) {
+            this.startCapture();
+        }
+    }
 
-window.getSessionInfo = function () {
-    return {
-        sessionId: sessionId,
-        currentUrl: currentUrl,
-        trackedUrls: Object.keys(heatmapData),
-        serverUrl: config.serverUrl,
-        imageQuality: config.imageQuality,
-        userId: config.userId
-    };
-};
+    sendSessionEnd() {
+        this.sendWebSocketMessage({
+            type: 'session_end',
+            sessionId: this.sessionId,
+            timestamp: Date.now()
+        });
+
+        // Close WebSocket
+        if (this.ws) {
+            this.ws.close();
+        }
+    }
+
+    updateConfig(newConfig) {
+        Object.assign(config, newConfig);
+    }
+
+    // Public API
+    getSessionInfo() {
+        return {
+            sessionId: this.sessionId,
+            currentUrl: this.currentUrl,
+            trackedUrls: Array.from(this.heatmapData.keys()),
+            serverUrl: config.serverUrl,
+            imageQuality: config.imageQuality,
+            userId: config.userId,
+            isConnected: this.isConnected,
+            bufferSizes: {
+                mouse: this.mouseBuffer.length,
+                click: this.clickBuffer.length,
+                trail: this.trailPoints.length
+            }
+        };
+    }
+
+    destroy() {
+        // Clean up timers
+        if (this.captureTimer) clearInterval(this.captureTimer);
+        if (this.cleanupTimer) clearInterval(this.cleanupTimer);
+        if (this.bufferFlushTimer) clearTimeout(this.bufferFlushTimer);
+        if (this.urlCheckTimer) clearInterval(this.urlCheckTimer);
+
+        // Clean up RAF
+        if (this.rafId) CANCEL_RAF(this.rafId);
+
+        // Close WebSocket
+        if (this.ws) {
+            this.ws.close();
+        }
+
+        // Clear data
+        this.heatmapData.clear();
+        this.mouseBuffer = [];
+        this.clickBuffer = [];
+        this.trailPoints = [];
+        this.canvasPool = [];
+    }
+}
+
+// Initialize
+const heatmapTracker = new PerformantHeatmapTracker();
+
+// Global API
+window.getSessionInfo = () => heatmapTracker.getSessionInfo();
+window.destroyHeatmapTracker = () => heatmapTracker.destroy();
