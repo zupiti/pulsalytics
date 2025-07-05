@@ -28,7 +28,6 @@ const UPLOAD_DIR = path.join(__dirname, 'upload');
 // Garantir que a pasta upload existe
 if (!fs.existsSync(UPLOAD_DIR)) {
     fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-    console.log('📁 Pasta upload criada');
 }
 
 const PORT = 3001;
