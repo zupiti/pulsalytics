@@ -1,8 +1,9 @@
 const config = window.HEATMAP_CONFIG || {
     serverUrl: 'ws://localhost:3002',
     interval: 2000, // 2 segundos parametrizado
+    socketDelay: 100, // 100ms de intervalo entre envios
+    urlCheckInterval: 500, // 500ms para verificar mudança de URL
     userId: null,
-    // Remover todas as outras configurações complexas
 };
 
 class HeatmapTracker {
@@ -10,15 +11,18 @@ class HeatmapTracker {
         this.config = { ...config, ...customConfig };
         this.sessionId = this.getSessionId();
         this.url = window.location.href;
+        this.currentUrl = this.url;
         this.ws = null;
         this.isConnected = false;
         this.messageQueue = [];
+        this.lastSendTime = 0;
 
         // Dados simples
         this.mousePositions = [];
         this.clickPoints = [];
-        this.isMouseInFocus = false;
+        this.isMouseInFocus = true; // Iniciar como true para capturar cliques imediatamente
         this.interval = null;
+        this.urlCheckInterval = null;
 
         this.init();
     }
@@ -27,6 +31,14 @@ class HeatmapTracker {
         this.connectWebSocket();
         this.setupEventListeners();
         this.startTracking();
+        this.startUrlMonitoring();
+
+        // Log inicial para debug
+        console.log('HeatmapTracker iniciado', {
+            sessionId: this.sessionId,
+            url: this.url,
+            isMouseInFocus: this.isMouseInFocus
+        });
     }
 
     connectWebSocket() {
@@ -35,6 +47,7 @@ class HeatmapTracker {
 
             this.ws.onopen = () => {
                 this.isConnected = true;
+                console.log('WebSocket conectado');
                 this.sendQueuedMessages();
             };
 
@@ -44,14 +57,17 @@ class HeatmapTracker {
 
             this.ws.onclose = () => {
                 this.isConnected = false;
+                console.log('WebSocket desconectado');
                 this.scheduleReconnect();
             };
 
-            this.ws.onerror = () => {
+            this.ws.onerror = (error) => {
                 this.isConnected = false;
+                console.error('Erro no WebSocket:', error);
             };
 
         } catch (error) {
+            console.error('Erro ao conectar WebSocket:', error);
             this.scheduleReconnect();
         }
     }
@@ -60,18 +76,27 @@ class HeatmapTracker {
         setTimeout(() => this.connectWebSocket(), 2000);
     }
 
-    sendWebSocketMessage(data) {
+    async sendWebSocketMessage(data) {
+        // Implementar delay entre envios
+        const now = Date.now();
+        const timeSinceLastSend = now - this.lastSendTime;
+
+        if (timeSinceLastSend < this.config.socketDelay) {
+            await new Promise(resolve => setTimeout(resolve, this.config.socketDelay - timeSinceLastSend));
+        }
+
         if (this.isConnected && this.ws.readyState === WebSocket.OPEN) {
             this.ws.send(JSON.stringify(data));
+            this.lastSendTime = Date.now();
         } else {
             this.messageQueue.push(data);
         }
     }
 
-    sendQueuedMessages() {
+    async sendQueuedMessages() {
         while (this.messageQueue.length > 0) {
             const message = this.messageQueue.shift();
-            this.sendWebSocketMessage(message);
+            await this.sendWebSocketMessage(message);
         }
     }
 
@@ -89,40 +114,99 @@ class HeatmapTracker {
                     timestamp: Date.now()
                 });
             }
-        });
+        }, { passive: true });
 
-        // Mouse click
+        // CORREÇÃO PRINCIPAL: Usar apenas um event listener para cliques
+        // Usar capture: true para garantir que o evento seja capturado
         document.addEventListener('click', (e) => {
-            this.clickPoints.push({
-                x: e.clientX,
-                y: e.clientY,
-                timestamp: Date.now()
-            });
-        });
+            this.captureClick(e, 'click');
+        }, { capture: true, passive: true });
 
-        // Focus events
+        // Backup com mousedown para casos especiais
+        document.addEventListener('mousedown', (e) => {
+            // Só capturar se não for um clique normal (botão direito, etc.)
+            if (e.button !== 0) {
+                this.captureClick(e, 'mousedown');
+            }
+        }, { capture: true, passive: true });
+
+        // Touch events para dispositivos móveis
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 0) {
+                const touch = e.touches[0];
+                this.captureClick({
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    target: e.target,
+                    button: 0
+                }, 'touch');
+            }
+        }, { passive: true });
+
+        // Focus events - simplificados
         window.addEventListener('focus', () => {
             this.isMouseInFocus = true;
+            console.log('Window focus - mouse tracking ativado');
         });
 
         window.addEventListener('blur', () => {
             this.isMouseInFocus = false;
+            console.log('Window blur - mouse tracking desativado');
         });
 
-        // Mouse enter/leave
-        document.addEventListener('mouseenter', () => {
-            this.isMouseInFocus = true;
+        // Page visibility change
+        document.addEventListener('visibilitychange', () => {
+            this.isMouseInFocus = !document.hidden;
+            console.log('Visibility change - mouse tracking:', this.isMouseInFocus);
         });
+    }
 
-        document.addEventListener('mouseleave', () => {
-            this.isMouseInFocus = false;
-        });
+    // Método separado para capturar cliques
+    captureClick(event, eventType) {
+        const clickData = {
+            x: event.clientX,
+            y: event.clientY,
+            timestamp: Date.now(),
+            button: event.button || 0,
+            target: event.target ? event.target.tagName : 'UNKNOWN',
+            type: eventType
+        };
+
+        this.clickPoints.push(clickData);
+
+        // Log detalhado para debug
+        console.log('Click capturado:', clickData);
+        console.log('Total de clicks:', this.clickPoints.length);
     }
 
     startTracking() {
         this.interval = setInterval(() => {
             this.sendData();
         }, this.config.interval);
+    }
+
+    startUrlMonitoring() {
+        this.urlCheckInterval = setInterval(() => {
+            this.checkUrlChange();
+        }, this.config.urlCheckInterval);
+    }
+
+    checkUrlChange() {
+        const currentUrl = window.location.href;
+        if (currentUrl !== this.currentUrl) {
+            // URL mudou, resetar dados
+            console.log('URL mudou de', this.currentUrl, 'para', currentUrl);
+            this.resetTrackingData();
+            this.currentUrl = currentUrl;
+            this.url = currentUrl;
+        }
+    }
+
+    resetTrackingData() {
+        const oldClicksCount = this.clickPoints.length;
+        this.mousePositions = [];
+        this.clickPoints = [];
+        console.log('Dados resetados devido à mudança de URL. Clicks resetados:', oldClicksCount);
     }
 
     // Converter canvas para blob
@@ -155,14 +239,38 @@ class HeatmapTracker {
 
     async sendData() {
         try {
-            // APENAS enviar dados se houver atividade E o usuário tem foco no mouse
-            const hasActivity = this.mousePositions.length > 0 || this.clickPoints.length > 0;
+            // Verificar se há atividade para enviar
+            const hasMouseActivity = this.mousePositions.length > 0;
+            const hasClickActivity = this.clickPoints.length > 0;
+            const hasActivity = hasMouseActivity || hasClickActivity;
 
-            if (!this.isMouseInFocus || !hasActivity) {
-                return; // Não enviar se não há atividade ou foco
+            // Log detalhado para debug
+            console.log('Verificando atividade:', {
+                mousePositions: this.mousePositions.length,
+                clickPoints: this.clickPoints.length,
+                hasActivity: hasActivity,
+                isMouseInFocus: this.isMouseInFocus,
+                isConnected: this.isConnected
+            });
+
+            // Sempre enviar dados se houver atividade
+            if (!hasActivity) {
+                console.log('Nenhuma atividade detectada, pulando envio');
+                return;
             }
 
-            // Sempre capturar screenshot quando há atividade
+            // Criar cópia dos dados antes de enviar
+            const positionsToSend = [...this.mousePositions];
+            const clicksToSend = [...this.clickPoints];
+
+            console.log('Preparando para enviar:', {
+                positions: positionsToSend.length,
+                clicks: clicksToSend.length,
+                clicksData: clicksToSend
+            });
+
+            // Capturar screenshot quando há atividade
+            let screenshot = null;
             try {
                 const canvas = await html2canvas(document.body, {
                     scale: 0.3,
@@ -174,47 +282,59 @@ class HeatmapTracker {
                     height: Math.min(window.innerHeight, 600)
                 });
 
-                // Converter canvas para blob
-                const blob = await this.canvasToBlob(canvas);
+                screenshot = await this.canvasToBlob(canvas);
+                console.log('Screenshot capturado:', screenshot ? screenshot.size : 'falhou');
+            } catch (error) {
+                console.warn('Erro ao capturar screenshot:', error);
+            }
 
-                // Primeiro enviar metadados
-                const metadata = {
-                    type: 'heatmap_metadata',
-                    sessionId: this.sessionId,
-                    timestamp: Date.now(),
-                    url: this.url,
-                    positions: [...this.mousePositions],
-                    clickPoints: [...this.clickPoints],
-                    imageSize: blob.size,
-                    imageType: 'image/webp'
-                };
+            // Primeiro enviar metadados com delay
+            const metadata = {
+                type: 'heatmap_metadata',
+                sessionId: this.sessionId,
+                timestamp: Date.now(),
+                url: this.url,
+                positions: positionsToSend,
+                clickPoints: clicksToSend,
+                imageSize: screenshot ? screenshot.size : 0,
+                imageType: screenshot ? 'image/webp' : null
+            };
 
-                this.sendWebSocketMessage(metadata);
+            console.log('Enviando metadados:', metadata);
+            await this.sendWebSocketMessage(metadata);
 
-                // Depois enviar o blob como ArrayBuffer
-                const arrayBuffer = await this.blobToArrayBuffer(blob);
+            // Depois enviar o blob como ArrayBuffer se existir
+            if (screenshot) {
+                const arrayBuffer = await this.blobToArrayBuffer(screenshot);
+
+                // Aguardar delay antes de enviar imagem
+                await new Promise(resolve => setTimeout(resolve, this.config.socketDelay));
 
                 if (this.isConnected && this.ws.readyState === WebSocket.OPEN) {
                     this.ws.send(arrayBuffer);
+                    console.log('Screenshot enviado');
                 }
-
-            } catch (error) {
-                // Se não conseguir capturar imagem, não enviar dados
-                return;
             }
 
-            // Limpar dados após envio
-            this.mousePositions = [];
-            this.clickPoints = [];
+            // Limpar dados após envio bem-sucedido
+            if (this.currentUrl !== this.url) {
+                this.mousePositions = [];
+                this.clickPoints = [];
+            }
+
+            console.log('Dados enviados e limpos com sucesso');
 
         } catch (error) {
-            // Em caso de erro, não enviar nada
+            console.error('Erro ao enviar dados:', error);
         }
     }
 
     destroy() {
         if (this.interval) {
             clearInterval(this.interval);
+        }
+        if (this.urlCheckInterval) {
+            clearInterval(this.urlCheckInterval);
         }
         if (this.ws) {
             this.ws.close();
@@ -228,5 +348,23 @@ const heatmapTracker = new HeatmapTracker();
 // API global simples
 window.HeatmapTracker = {
     destroy: () => heatmapTracker.destroy(),
-    getSessionId: () => heatmapTracker.sessionId
+    getSessionId: () => heatmapTracker.sessionId,
+    resetData: () => heatmapTracker.resetTrackingData(),
+    getCurrentUrl: () => heatmapTracker.url,
+    getStats: () => ({
+        mousePositions: heatmapTracker.mousePositions.length,
+        clickPoints: heatmapTracker.clickPoints.length,
+        isConnected: heatmapTracker.isConnected,
+        isMouseInFocus: heatmapTracker.isMouseInFocus
+    }),
+    // Método para teste manual
+    testClick: () => {
+        heatmapTracker.captureClick({
+            clientX: 100,
+            clientY: 100,
+            target: { tagName: 'TEST' },
+            button: 0
+        }, 'manual');
+        console.log('Click de teste adicionado');
+    }
 };

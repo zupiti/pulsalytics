@@ -1,21 +1,37 @@
 // Servidor Node.js simplificado para receber dados do heatmap via WebSocket
 const express = require('express');
+const http = require('http');
+const WebSocket = require('ws');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
-const WebSocket = require('ws');
 
 const app = express();
-app.use(cors());
+const server = http.createServer(app);
+
+// Configurar CORS
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: false
+}));
+
+// Middleware para JSON
 app.use(express.json());
 
-const PORT = 3001;
+// Servir arquivos estáticos
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Pasta para uploads
-const UPLOAD_DIR = path.join(__dirname, 'uploads');
+// Diretório para uploads
+const UPLOAD_DIR = path.join(__dirname, 'upload');
+
+// Garantir que a pasta upload existe
 if (!fs.existsSync(UPLOAD_DIR)) {
-    fs.mkdirSync(UPLOAD_DIR);
+    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+    console.log('📁 Pasta upload criada');
 }
+
+const PORT = 3001;
 
 // Servir arquivos estáticos da pasta uploads
 app.use('/uploads', express.static(UPLOAD_DIR));
@@ -138,7 +154,7 @@ app.delete('/api/session/:sessionId', (req, res) => {
 });
 
 // Iniciar servidor HTTP
-const server = app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}/admin`);
 });
 
