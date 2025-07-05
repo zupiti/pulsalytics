@@ -16,7 +16,7 @@ import Visibility from '@mui/icons-material/Visibility';
 import TouchApp from '@mui/icons-material/TouchApp';
 import Schedule from '@mui/icons-material/Schedule';
 
-// Componente para monitorar WebSocket
+// WebSocket Monitor Component
 export const WebSocketMonitor = memo(function WebSocketMonitor({ wsStats, activeConnections }) {
   const totalConnections = Object.keys(activeConnections || {}).length;
   const activeUploads = Object.values(activeConnections || {}).filter(conn => conn.uploading).length;
@@ -25,7 +25,7 @@ export const WebSocketMonitor = memo(function WebSocketMonitor({ wsStats, active
     <Card sx={{ mb: 2, p: 2 }}>
       <Typography variant="h6" gutterBottom>
         <SettingsEthernet sx={{ mr: 1, verticalAlign: 'middle' }} />
-        Monitor WebSocket
+        WebSocket Monitor
       </Typography>
 
       <Grid container spacing={2}>
@@ -34,7 +34,7 @@ export const WebSocketMonitor = memo(function WebSocketMonitor({ wsStats, active
             <WifiTethering color={totalConnections > 0 ? 'success' : 'disabled'} sx={{ fontSize: 40 }} />
             <Typography variant="h6">{totalConnections}</Typography>
             <Typography variant="body2" color="text.secondary">
-              Conexões Ativas
+              Active Connections
             </Typography>
           </Box>
         </Grid>
@@ -44,7 +44,7 @@ export const WebSocketMonitor = memo(function WebSocketMonitor({ wsStats, active
             <CloudUpload color={activeUploads > 0 ? 'warning' : 'disabled'} sx={{ fontSize: 40 }} />
             <Typography variant="h6">{activeUploads}</Typography>
             <Typography variant="body2" color="text.secondary">
-              Uploads Ativos
+              Active Uploads
             </Typography>
           </Box>
         </Grid>
@@ -54,7 +54,7 @@ export const WebSocketMonitor = memo(function WebSocketMonitor({ wsStats, active
             <Memory color="primary" sx={{ fontSize: 40 }} />
             <Typography variant="h6">{wsStats?.totalMessages || 0}</Typography>
             <Typography variant="body2" color="text.secondary">
-              Mensagens Total
+              Total Messages
             </Typography>
           </Box>
         </Grid>
@@ -64,7 +64,7 @@ export const WebSocketMonitor = memo(function WebSocketMonitor({ wsStats, active
             <NetworkCheck color="info" sx={{ fontSize: 40 }} />
             <Typography variant="h6">{wsStats?.imagesReceived || 0}</Typography>
             <Typography variant="body2" color="text.secondary">
-              Imagens Recebidas
+              Images Received
             </Typography>
           </Box>
         </Grid>
@@ -73,7 +73,7 @@ export const WebSocketMonitor = memo(function WebSocketMonitor({ wsStats, active
       {totalConnections > 0 && (
         <Accordion sx={{ mt: 2 }}>
           <AccordionSummary expandIcon={<ExpandMore />}>
-            <Typography>Detalhes das Conexões Ativas</Typography>
+            <Typography>Active Connection Details</Typography>
           </AccordionSummary>
           <AccordionDetails>
             <Table size="small">
@@ -81,9 +81,9 @@ export const WebSocketMonitor = memo(function WebSocketMonitor({ wsStats, active
                 <TableRow>
                   <TableCell>Session ID</TableCell>
                   <TableCell>Status</TableCell>
-                  <TableCell>Última Atividade</TableCell>
-                  <TableCell>Imagens</TableCell>
-                  <TableCell>Qualidade</TableCell>
+                  <TableCell>Last Activity</TableCell>
+                  <TableCell>Images</TableCell>
+                  <TableCell>Quality</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -122,7 +122,7 @@ export const WebSocketMonitor = memo(function WebSocketMonitor({ wsStats, active
   );
 });
 
-// Componente de Estatísticas Gerais
+// General Statistics Component
 export const OverviewStats = memo(function OverviewStats({ stats, lastUpdateTime, wsStats }) {
   const formatDuration = useCallback((ms) => {
     if (ms < 60000) return `${Math.round(ms / 1000)}s`;
@@ -132,25 +132,25 @@ export const OverviewStats = memo(function OverviewStats({ stats, lastUpdateTime
 
   const statCards = useMemo(() => [
     {
-      title: 'Total de Sessões',
+      title: 'Total Sessions',
       value: stats.totalSessions || 0,
       icon: <Person />,
       color: '#1976d2'
     },
     {
-      title: 'Total de Capturas',
+      title: 'Total Captures',
       value: stats.totalImages || 0,
       icon: <Visibility />,
       color: '#388e3c'
     },
     {
-      title: 'Cliques Estimados',
+      title: 'Estimated Clicks',
       value: stats.totalClicks || 0,
       icon: <TouchApp />,
       color: '#f57c00'
     },
     {
-      title: 'Tempo Médio/Sessão',
+      title: 'Avg. Time/Session',
       value: formatDuration(stats.avgSessionTime || 0),
       icon: <Schedule />,
       color: '#7b1fa2'

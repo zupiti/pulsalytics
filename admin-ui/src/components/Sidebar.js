@@ -52,7 +52,7 @@ export const Sidebar = memo(function Sidebar({
   // Memoizar conteúdo da navegação
   const navigationContent = useMemo(() => (
     <>
-      <Typography variant="subtitle1" sx={{ px: 2, mb: 1, color: '#bbb' }}>Navegação</Typography>
+      <Typography variant="subtitle1" sx={{ px: 2, mb: 1, color: '#bbb' }}>Navigation</Typography>
       <Divider sx={{ bgcolor: '#444' }} />
 
       <List>
@@ -73,7 +73,7 @@ export const Sidebar = memo(function Sidebar({
             sx={{ borderRadius: 1, mx: 1, my: 0.5 }}
           >
             <Timeline sx={{ mr: 1, color: activeTab === 1 ? '#90caf9' : '#bbb' }} />
-            <ListItemText primary="Sessões" />
+            <ListItemText primary="Sessions" />
           </ListItemButton>
         </ListItem>
 
@@ -82,7 +82,7 @@ export const Sidebar = memo(function Sidebar({
       <Divider sx={{ bgcolor: '#444', my: 2 }} />
 
       <Typography variant="subtitle1" sx={{ px: 2, mb: 1, color: '#bbb' }}>
-        Sessões Ativas ({sortedSessionIds.length})
+        Active Sessions ({sortedSessionIds.length})
       </Typography>
     </>
   ), [activeTab, handleTabChange, sortedSessionIds.length]);
@@ -108,7 +108,7 @@ export const Sidebar = memo(function Sidebar({
     }}>
       {sortedSessionIds.length === 0 && (
         <ListItem>
-          <ListItemText primary={<span style={{ color: '#888' }}>Nenhuma sessão</span>} />
+          <ListItemText primary={<span style={{ color: '#888' }}>No session</span>} />
         </ListItem>
       )}
       {sortedSessionIds.map((sessionId, index) => {
@@ -145,7 +145,7 @@ export const Sidebar = memo(function Sidebar({
                     px: 1,
                     textTransform: 'uppercase'
                   }}>
-                    {isDisconnected ? 'Offline' : 'Inativo'}
+                    {isDisconnected ? 'Offline' : 'Inactive'}
                   </Typography>
                 </Divider>
               </ListItem>
@@ -179,7 +179,7 @@ export const Sidebar = memo(function Sidebar({
                     }
                     secondary={
                       <span style={{ color: '#bbb', fontSize: '0.75rem' }}>
-                        {`${groups[sessionId]?.length || 0} frames • ${isOnline ? 'Online' : isDisconnected ? 'Offline' : 'Inativo'}`}
+                        {`${groups[sessionId]?.length || 0} frames • ${isOnline ? 'Online' : isDisconnected ? 'Offline' : 'Inactive'}`}
                       </span>
                     }
                   />

@@ -60,7 +60,7 @@ export const VideoPlayer = memo(function VideoPlayer({
     const now = Date.now();
     const timeSinceLastImage = now - lastImage.timestamp;
 
-    return timeSinceLastImage > 20000; // 20 segundos
+    return timeSinceLastImage > 20000; // 20 seconds
   }, [images]);
 
   const isOnline = sessionDetail?.isActive && !isDisconnected && !isTimedOut;
@@ -378,28 +378,28 @@ export const VideoPlayer = memo(function VideoPlayer({
         label: 'Offline',
         color: 'error',
         icon: <SignalWifiOff />,
-        description: 'Usuário desconectado'
+        description: 'User disconnected'
       };
     } else if (isTimedOut) {
       return {
         label: 'Timeout (20s)',
         color: 'warning',
         icon: <Schedule />,
-        description: 'Última imagem há mais de 20 segundos'
+        description: 'Last image was more than 20 seconds ago'
       };
     } else if (isOnline) {
       return {
         label: 'Online',
         color: 'success',
         icon: <Visibility />,
-        description: 'Usuário ativo agora'
+        description: 'User active now'
       };
     } else {
       return {
-        label: 'Inativo',
+        label: 'Inactive',
         color: 'warning',
         icon: <Schedule />,
-        description: 'Sessão inativa'
+        description: 'Session inactive'
       };
     }
   }, [isDisconnected, isTimedOut, isOnline]);
@@ -451,7 +451,7 @@ export const VideoPlayer = memo(function VideoPlayer({
             sx={{ px: 2, py: 1 }}
           />
           <Typography variant="body2" color="text.secondary">
-            Sessão: {sessionId?.slice(-8)}
+            Session: {sessionId?.slice(-8)}
           </Typography>
           <Button
             variant="outlined"
@@ -464,7 +464,7 @@ export const VideoPlayer = memo(function VideoPlayer({
               borderRadius: 2
             }}
           >
-            Deletar
+            Delete
           </Button>
         </Box>
       </Box>
@@ -685,7 +685,7 @@ export const VideoPlayer = memo(function VideoPlayer({
                       color: '#2196f3',
                       fontWeight: 600
                     }}>
-                      <ThermostatAuto /> Visualização
+                      <ThermostatAuto /> Visualization
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                       <FormControlLabel
@@ -696,7 +696,7 @@ export const VideoPlayer = memo(function VideoPlayer({
                             color="primary"
                           />
                         }
-                        label="Mapa de Calor"
+                        label="Heatmap"
                         sx={{
                           '& .MuiFormControlLabel-label': {
                             fontSize: '0.95rem',
@@ -712,7 +712,7 @@ export const VideoPlayer = memo(function VideoPlayer({
                             color="primary"
                           />
                         }
-                        label="Trilha do Mouse"
+                        label="Mouse Trail"
                         sx={{
                           '& .MuiFormControlLabel-label': {
                             fontSize: '0.95rem',
@@ -728,7 +728,7 @@ export const VideoPlayer = memo(function VideoPlayer({
                             color="primary"
                           />
                         }
-                        label="Cliques"
+                        label="Clicks"
                         sx={{
                           '& .MuiFormControlLabel-label': {
                             fontSize: '0.95rem',
@@ -739,7 +739,7 @@ export const VideoPlayer = memo(function VideoPlayer({
                     </Box>
                     <Box sx={{ mt: 3 }}>
                       <Typography variant="body2" gutterBottom sx={{ fontWeight: 500 }}>
-                        Intensidade: {heatmapIntensity}%
+                        Intensity: {heatmapIntensity}%
                       </Typography>
                       <Slider
                         value={heatmapIntensity}
@@ -774,7 +774,7 @@ export const VideoPlayer = memo(function VideoPlayer({
                       color: '#2196f3',
                       fontWeight: 600
                     }}>
-                      📊 Estatísticas
+                      📊 Statistics
                     </Typography>
                     <Grid container spacing={2}>
                       <Grid item xs={6}>
@@ -811,7 +811,7 @@ export const VideoPlayer = memo(function VideoPlayer({
                             {formatDuration(stats.duration)}
                           </Typography>
                           <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                            Duração
+                            Duration
                           </Typography>
                         </Box>
                       </Grid>
@@ -834,7 +834,7 @@ export const VideoPlayer = memo(function VideoPlayer({
                       color: '#2196f3',
                       fontWeight: 600
                     }}>
-                      🎯 Interações
+                      🎯 Interactions
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                       <Chip
@@ -842,7 +842,7 @@ export const VideoPlayer = memo(function VideoPlayer({
                         label={`${(() => {
                           const { positions } = getCurrentImageData();
                           return positions.length || mouseData.length;
-                        })()} Movimentos`}
+                        })()} Movements`}
                         color="primary"
                         variant="outlined"
                         sx={{
@@ -856,7 +856,7 @@ export const VideoPlayer = memo(function VideoPlayer({
                         label={`${(() => {
                           const { clickPoints } = getCurrentImageData();
                           return clickPoints.length || clickData.length;
-                        })()} Cliques`}
+                        })()} Clicks`}
                         color="secondary"
                         variant="outlined"
                         sx={{
@@ -867,7 +867,7 @@ export const VideoPlayer = memo(function VideoPlayer({
                       />
                       <Chip
                         icon={<ThermostatAuto />}
-                        label={`${createHeatmapData().length} Zonas de Calor`}
+                        label={`${createHeatmapData().length} Heatmap Zones`}
                         color="success"
                         variant="outlined"
                         sx={{
@@ -906,7 +906,7 @@ export const VideoPlayer = memo(function VideoPlayer({
                           }
                         }}
                       >
-                        🔄 Redesenhar Canvas
+                        🔄 Redraw Canvas
                       </Button>
 
                       {/* Status dos dados */}
@@ -921,10 +921,10 @@ export const VideoPlayer = memo(function VideoPlayer({
                           <strong>Status:</strong>
                         </Typography>
                         <Typography variant="caption" display="block">
-                          Imagem carregada: {imageLoaded ? '✅' : '❌'}
+                          Image loaded: {imageLoaded ? '✅' : '❌'}
                         </Typography>
                         <Typography variant="caption" display="block">
-                          Dados na imagem: {(() => {
+                          Data in image: {(() => {
                             const { positions, clickPoints } = getCurrentImageData();
                             return (positions.length > 0 || clickPoints.length > 0) ? '✅' : '❌';
                           })()}
@@ -950,10 +950,10 @@ export const VideoPlayer = memo(function VideoPlayer({
           boxShadow: '0 4px 16px rgba(0,0,0,0.08)'
         }}>
           <Typography variant="h5" color="text.secondary" gutterBottom sx={{ fontWeight: 500 }}>
-            📹 Nenhuma captura encontrada
+            📹 No capture found
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Esta sessão ainda não possui dados de captura de tela
+            This session does not have any screen capture data yet
           </Typography>
         </Box>
       )}

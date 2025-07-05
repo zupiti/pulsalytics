@@ -50,7 +50,7 @@ const WebSocketMonitor = memo(function WebSocketMonitor({ wsStats, activeConnect
             <WifiTethering color={totalConnections > 0 ? 'success' : 'disabled'} sx={{ fontSize: 40 }} />
             <Typography variant="h6">{totalConnections}</Typography>
             <Typography variant="body2" color="text.secondary">
-              Conexões Ativas
+              Active Connections
             </Typography>
           </Box>
         </Grid>
@@ -60,7 +60,7 @@ const WebSocketMonitor = memo(function WebSocketMonitor({ wsStats, activeConnect
             <CloudUpload color={activeUploads > 0 ? 'warning' : 'disabled'} sx={{ fontSize: 40 }} />
             <Typography variant="h6">{activeUploads}</Typography>
             <Typography variant="body2" color="text.secondary">
-              Uploads Ativos
+              Uploads Active
             </Typography>
           </Box>
         </Grid>
@@ -70,7 +70,7 @@ const WebSocketMonitor = memo(function WebSocketMonitor({ wsStats, activeConnect
             <Memory color="primary" sx={{ fontSize: 40 }} />
             <Typography variant="h6">{wsStats?.totalMessages || 0}</Typography>
             <Typography variant="body2" color="text.secondary">
-              Mensagens Total
+              Total Messages
             </Typography>
           </Box>
         </Grid>
@@ -80,7 +80,7 @@ const WebSocketMonitor = memo(function WebSocketMonitor({ wsStats, activeConnect
             <NetworkCheck color="info" sx={{ fontSize: 40 }} />
             <Typography variant="h6">{wsStats?.imagesReceived || 0}</Typography>
             <Typography variant="body2" color="text.secondary">
-              Imagens Recebidas
+              Images Received
             </Typography>
           </Box>
         </Grid>
@@ -89,7 +89,7 @@ const WebSocketMonitor = memo(function WebSocketMonitor({ wsStats, activeConnect
       {totalConnections > 0 && (
         <Accordion sx={{ mt: 2 }}>
           <AccordionSummary expandIcon={<ExpandMore />}>
-            <Typography>Detalhes das Conexões Ativas</Typography>
+            <Typography>Details of Active Connections</Typography>
           </AccordionSummary>
           <AccordionDetails>
             <Table size="small">
@@ -97,9 +97,9 @@ const WebSocketMonitor = memo(function WebSocketMonitor({ wsStats, activeConnect
                 <TableRow>
                   <TableCell>Session ID</TableCell>
                   <TableCell>Status</TableCell>
-                  <TableCell>Última Atividade</TableCell>
-                  <TableCell>Imagens</TableCell>
-                  <TableCell>Qualidade</TableCell>
+                  <TableCell>Last Activity</TableCell>
+                  <TableCell>Images</TableCell>
+                  <TableCell>Quality</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -148,25 +148,25 @@ const OverviewStats = memo(function OverviewStats({ stats, lastUpdateTime, wsSta
 
   const statCards = useMemo(() => [
     {
-      title: 'Total de Sessões',
+      title: 'Total Sessions',
       value: stats.totalSessions || 0,
       icon: <Person />,
       color: '#1976d2'
     },
     {
-      title: 'Total de Capturas',
+      title: 'Total Captures',
       value: stats.totalImages || 0,
       icon: <Visibility />,
       color: '#388e3c'
     },
     {
-      title: 'Cliques Estimados',
+      title: 'Estimated Clicks',
       value: stats.totalClicks || 0,
       icon: <TouchApp />,
       color: '#f57c00'
     },
     {
-      title: 'Tempo Médio/Sessão',
+      title: 'Average Time/Session',
       value: formatDuration(stats.avgSessionTime || 0),
       icon: <Schedule />,
       color: '#7b1fa2'
@@ -265,7 +265,7 @@ const SessionsList = memo(function SessionsList({ stats, groups, selectedSession
       // Fallback genérico
       icon = '👤';
       const parts = sessionId.split('_');
-      displayName = parts[1] ? `Usuário ${parts[1]}` : 'Sessão Anônima';
+      displayName = parts[1] ? `Usuário ${parts[1]}` : 'Anonymous Session';
     }
 
     return `${icon} ${displayName}`;
@@ -278,21 +278,21 @@ const SessionsList = memo(function SessionsList({ stats, groups, selectedSession
         label: 'Offline',
         color: 'error',
         icon: <SignalWifiOff fontSize="small" />,
-        description: 'Usuário desconectado'
+        description: 'User disconnected'
       };
     } else if (detail.isActive) {
       return {
         label: 'Online',
         color: 'success',
         icon: <Visibility fontSize="small" />,
-        description: 'Usuário ativo agora'
+        description: 'User active now'
       };
     } else {
       return {
         label: 'Offline',
         color: 'warning',
         icon: <Schedule fontSize="small" />,
-        description: 'Usuário inativo'
+        description: 'User inactive'
       };
     }
   }, [disconnectedSessions, sessionStatus]);
@@ -301,7 +301,7 @@ const SessionsList = memo(function SessionsList({ stats, groups, selectedSession
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
         <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Timeline /> Sessões Detalhadas
+          <Timeline /> Sessions Details
         </Typography>
 
         {/* Resumo de Status */}
@@ -327,7 +327,7 @@ const SessionsList = memo(function SessionsList({ stats, groups, selectedSession
                 />
                 {inactiveCount > 0 && (
                   <Chip
-                    label={`${inactiveCount} Inativo`}
+                    label={`${inactiveCount} Inactive`}
                     color="warning"
                     size="small"
                     icon={<Schedule fontSize="small" />}
@@ -343,13 +343,13 @@ const SessionsList = memo(function SessionsList({ stats, groups, selectedSession
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Sessão</TableCell>
+              <TableCell>Session</TableCell>
               <TableCell align="center">Status</TableCell>
-              <TableCell align="center">Capturas</TableCell>
-              <TableCell align="center">Cliques</TableCell>
-              <TableCell align="center">Duração</TableCell>
-              <TableCell align="center">Última Atividade</TableCell>
-              <TableCell align="center">Ações</TableCell>
+              <TableCell align="center">Captures</TableCell>
+              <TableCell align="center">Clicks</TableCell>
+              <TableCell align="center">Duration</TableCell>
+              <TableCell align="center">Last Activity</TableCell>
+              <TableCell align="center">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -384,7 +384,7 @@ const SessionsList = memo(function SessionsList({ stats, groups, selectedSession
                           {getSessionDisplayName(sessionId)}
                           {isDisconnected && (
                             <Chip
-                              label="DESCONECTADO"
+                              label="DISCONNECTED"
                               size="small"
                               color="error"
                               sx={{ ml: 1, fontSize: '0.7rem' }}
@@ -423,12 +423,12 @@ const SessionsList = memo(function SessionsList({ stats, groups, selectedSession
                       </Typography>
                       {detail.isActive && (
                         <Typography variant="caption" color="success.main">
-                          (em andamento)
+                          (in progress)
                         </Typography>
                       )}
                       {detail.isDisconnected && (
                         <Typography variant="caption" color="error.main">
-                          (finalizada)
+                          (finished)
                         </Typography>
                       )}
                     </Box>
@@ -437,16 +437,16 @@ const SessionsList = memo(function SessionsList({ stats, groups, selectedSession
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                       <Typography variant="caption">
                         {detail.isActive ?
-                          'Agora' :
+                          'Now' :
                           detail.lastImageTime.toLocaleTimeString()
                         }
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         {detail.isActive ?
-                          'Ativo' :
+                          'Active' :
                           detail.isDisconnected ?
-                            'Desconectado' :
-                            'Inativo'
+                            'Disconnected' :
+                            'Inactive'
                         }
                       </Typography>
                     </Box>
@@ -460,7 +460,7 @@ const SessionsList = memo(function SessionsList({ stats, groups, selectedSession
                           onCreateVideo(sessionId);
                         }}
                         color="primary"
-                        title="Reproduzir vídeo"
+                        title="Play video"
                       >
                         <VideoLibrary />
                       </IconButton>
@@ -471,7 +471,7 @@ const SessionsList = memo(function SessionsList({ stats, groups, selectedSession
                           onDeleteSession(sessionId);
                         }}
                         color="error"
-                        title="Deletar sessão"
+                        title="Delete session"
                       >
                         <Delete />
                       </IconButton>
@@ -490,21 +490,8 @@ const SessionsList = memo(function SessionsList({ stats, groups, selectedSession
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Warning color="warning" />
             <Typography variant="body2" color="warning.dark">
-              {disconnectedSessions.size} sessão(ões) desconectada(s).
-              Use o botão de deletar para remover sessões que não serão mais utilizadas.
-            </Typography>
-          </Box>
-        </Paper>
-      )}
-
-      {/* Aviso sobre sessões desconectadas */}
-      {disconnectedSessions.size > 0 && (
-        <Paper sx={{ p: 2, mt: 2, bgcolor: 'warning.light' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Warning color="warning" />
-            <Typography variant="body2" color="warning.dark">
-              {disconnectedSessions.size} sessão(ões) desconectada(s).
-              Use o botão de deletar para remover sessões que não serão mais utilizadas.
+              {disconnectedSessions.size} disconnected session(s).
+              Use the delete button to remove sessions that will no longer be used.
             </Typography>
           </Box>
         </Paper>
@@ -539,9 +526,9 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
     const lastActivity = sessionDetail.lastImageTime.getTime();
     const diffSeconds = Math.floor((now - lastActivity) / 1000);
 
-    if (diffSeconds < 60) return `${diffSeconds}s atrás`;
-    if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)}min atrás`;
-    return `${Math.floor(diffSeconds / 3600)}h atrás`;
+    if (diffSeconds < 60) return `${diffSeconds}s ago`;
+    if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)}min ago`;
+    return `${Math.floor(diffSeconds / 3600)}h ago`;
   }, [sessionDetail?.lastImageTime]);
 
   // Status da sessão com timeout de 20s
@@ -551,21 +538,21 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
         label: 'Offline',
         color: 'error',
         icon: <SignalWifiOff />,
-        description: 'Usuário desconectado'
+        description: 'User disconnected'
       };
     } else if (isOnline) {
       return {
         label: 'Online',
         color: 'success',
         icon: <Visibility />,
-        description: 'Usuário ativo agora'
+        description: 'User active now'
       };
     } else {
       return {
         label: 'Timeout (20s)',
         color: 'warning',
         icon: <Schedule />,
-        description: 'Sem atividade há mais de 20 segundos'
+        description: 'No activity for more than 20 seconds'
       };
     }
   }, [isDisconnected, isOnline]);
@@ -574,7 +561,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
         <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <VideoLibrary /> Player de Sessão
+          <VideoLibrary /> Session Player
         </Typography>
         <Button
           variant="outlined"
@@ -584,7 +571,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
           onClick={() => onDeleteSession(sessionId)}
           sx={{ textTransform: 'none' }}
         >
-          Deletar Sessão
+          Delete Session
         </Button>
       </Box>
 
@@ -610,7 +597,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
               {/* Informações do Frame */}
               <Box sx={{ mb: 2, textAlign: 'center' }}>
                 <Typography variant="h6" color="primary">
-                  Frame {currentIndex + 1} de {images.length}
+                  Frame {currentIndex + 1} of {images.length}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {images[currentIndex]?.timestamp &&
@@ -644,7 +631,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
               {/* Controle de Velocidade */}
               <Box sx={{ px: 2 }}>
                 <Typography variant="body2" gutterBottom>
-                  Velocidade: {(1000 / playbackSpeed).toFixed(1)} FPS
+                  Speed: {(1000 / playbackSpeed).toFixed(1)} FPS
                 </Typography>
                 <Slider
                   value={playbackSpeed}
@@ -671,12 +658,12 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
           <Grid item xs={12} md={4}>
             <Paper sx={{ p: 2, height: 'fit-content' }}>
               <Typography variant="h6" gutterBottom>
-                📊 Estatísticas da Sessão
+                📊 Session Statistics
               </Typography>
 
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="text.secondary">
-                  Sessão ID:
+                  Session ID:
                 </Typography>
                 <Typography variant="body2" sx={{ wordBreak: 'break-all', fontSize: '0.8rem' }}>
                   {sessionId}
@@ -699,7 +686,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
                     <Typography variant="h4" color="secondary">
                       {formatDuration(stats.duration)}
                     </Typography>
-                    <Typography variant="caption">Duração</Typography>
+                    <Typography variant="caption">Duration</Typography>
                   </Box>
                 </Grid>
                 <Grid item xs={6}>
@@ -707,7 +694,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
                     <Typography variant="h4" color="success.main">
                       {stats.avgFPS.toFixed(1)}
                     </Typography>
-                    <Typography variant="caption">FPS Médio</Typography>
+                    <Typography variant="caption">Average FPS</Typography>
                   </Box>
                 </Grid>
                 <Grid item xs={6}>
@@ -715,7 +702,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
                     <Typography variant="h4" color="warning.main">
                       {Math.floor(stats.totalFrames / 2.5)}
                     </Typography>
-                    <Typography variant="caption">Cliques Est.</Typography>
+                    <Typography variant="caption">Estimated Clicks</Typography>
                   </Box>
                 </Grid>
               </Grid>
@@ -725,7 +712,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
               {/* Progresso da Reprodução */}
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" gutterBottom>
-                  Progresso da Reprodução
+                  Playback Progress
                 </Typography>
                 <LinearProgress
                   variant="determinate"
@@ -733,7 +720,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
                   sx={{ height: 8, borderRadius: 1 }}
                 />
                 <Typography variant="caption" color="text.secondary">
-                  {((currentIndex / (images.length - 1)) * 100).toFixed(1)}% completo
+                  {((currentIndex / (images.length - 1)) * 100).toFixed(1)}% complete
                 </Typography>
               </Box>
 
@@ -742,7 +729,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
               {/* Status da Sessão com Timeout */}
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" gutterBottom>
-                  Status da Sessão
+                  Session Status
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                   {(() => {
@@ -766,7 +753,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                   {getSessionStatus().description}
                   {!isDisconnected && !isOnline && (
-                    <span style={{ color: '#f57c00' }}> - Sistema detecta inatividade após 20s sem atualizações</span>
+                    <span style={{ color: '#f57c00' }}> - System detects inactivity after 20s without updates</span>
                   )}
                 </Typography>
               </Box>
@@ -776,7 +763,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
       ) : (
         <Box sx={{ textAlign: 'center', py: 4 }}>
           <Typography variant="h6" color="text.secondary">
-            Nenhuma imagem encontrada para esta sessão
+            No images found for this session
           </Typography>
         </Box>
       )}
@@ -1089,7 +1076,7 @@ function App() {
 
     // Configurar WebSocket admin
     ws.onopen = () => {
-      console.log('✅ WebSocket Admin conectado');
+      console.log('✅ WebSocket Admin connected');
       setWsStats(prev => ({ ...prev, serverStatus: 'connected' }));
     };
 
@@ -1139,13 +1126,13 @@ function App() {
     };
 
     ws.onclose = () => {
-      console.log('🔌 WebSocket Admin desconectado');
+      console.log('🔌 WebSocket Admin disconnected');
       setWsStats(prev => ({ ...prev, serverStatus: 'disconnected' }));
     };
 
     // Configurar WebSocket heatmap monitor
     wsHeatmap.onopen = () => {
-      console.log('✅ WebSocket Heatmap Monitor conectado');
+      console.log('✅ WebSocket Heatmap Monitor connected');
       setWsServerConnected(true);
       
       // Solicitar status inicial
@@ -1220,7 +1207,7 @@ function App() {
     };
 
     wsHeatmap.onclose = () => {
-      console.log('🔌 WebSocket Heatmap Monitor desconectado');
+      console.log('🔌 WebSocket Heatmap Monitor disconnected');
       setWsServerConnected(false);
       setActiveWsConnections({});
     };
@@ -1242,29 +1229,6 @@ function App() {
       }
     };
   }, [fetchImages, activeWsConnections]);
-              disconnectedAt: data.timestamp
-            }
-          }));
-        } else if (data.type === 'session_deleted') {
-          console.log(`Sessão deletada: ${data.sessionId}`);
-          // Recarregar dados após deleção
-          fetchImages();
-        }
-      } catch (error) {
-        // Fallback para mensagens antigas no formato string
-        if (event.data === 'new-image') {
-          fetchImages();
-        }
-      }
-    };
-
-    return () => {
-      ws.close();
-      if (videoIntervalRef.current) {
-        clearInterval(videoIntervalRef.current);
-      }
-    };
-  }, [fetchImages]); // Removido lastUpdateTime
 
   // Handlers memoizados para evitar re-renders desnecessários
   const handleSelectSession = useCallback((sessionId) => {
@@ -1305,7 +1269,7 @@ function App() {
       >
         <Toolbar />
         <Box sx={{ overflow: 'auto', pt: 2 }}>
-          <Typography variant="subtitle1" sx={{ px: 2, mb: 1, color: '#bbb' }}>Navegação</Typography>
+          <Typography variant="subtitle1" sx={{ px: 2, mb: 1, color: '#bbb' }}>Navigation</Typography>
           <Divider sx={{ bgcolor: '#444' }} />
 
           {/* Abas de Navegação */}
@@ -1327,7 +1291,7 @@ function App() {
                 sx={{ borderRadius: 1, mx: 1, my: 0.5 }}
               >
                 <Timeline sx={{ mr: 1, color: currentTab === 1 ? '#90caf9' : '#bbb' }} />
-                <ListItemText primary="Sessões" />
+                <ListItemText primary="Sessions" />
               </ListItemButton>
             </ListItem>
           
@@ -1335,11 +1299,11 @@ function App() {
 
           <Divider sx={{ bgcolor: '#444', my: 2 }} />
 
-          <Typography variant="subtitle1" sx={{ px: 2, mb: 1, color: '#bbb' }}>Sessões Ativas ({sessionIds.length})</Typography>
+          <Typography variant="subtitle1" sx={{ px: 2, mb: 1, color: '#bbb' }}>Active Sessions ({sessionIds.length})</Typography>
           <List>
             {sessionIds.length === 0 && (
               <ListItem>
-                <ListItemText primary={<span style={{ color: '#888' }}>Nenhuma sessão</span>} />
+                <ListItemText primary={<span style={{ color: '#888' }}>No session</span>} />
               </ListItem>
             )}
             {sessionIds.slice(0, 5).map((sessionId) => {
@@ -1377,7 +1341,7 @@ function App() {
                         }
                         secondary={
                           <span style={{ color: '#bbb', fontSize: '0.75rem' }}>
-                            {`${groups[sessionId].length} frames • ${isOnline ? 'Online' : isDisconnected ? 'Offline' : 'Inativo'}`}
+                            {`${groups[sessionId].length} frames • ${isOnline ? 'Online' : isDisconnected ? 'Offline' : 'Inactive'}`}
                           </span>
                         }
                       />
@@ -1389,7 +1353,7 @@ function App() {
             {sessionIds.length > 5 && (
               <ListItem>
                 <ListItemText
-                  primary={<span style={{ color: '#888', fontSize: '0.8rem' }}>+{sessionIds.length - 5} mais sessões</span>}
+                  primary={<span style={{ color: '#888', fontSize: '0.8rem' }}>+{sessionIds.length - 5} more sessions</span>}
                 />
               </ListItem>
             )}
@@ -1448,10 +1412,10 @@ function App() {
               ) : (
                 <Box sx={{ p: 3, textAlign: 'center' }}>
                   <Typography variant="h5" color="text.secondary" gutterBottom>
-                    Selecione uma sessão para reproduzir
+                    Select a session to play
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
-                    Escolha uma sessão na barra lateral ou na aba "Sessões"
+                    Choose a session from the sidebar or the "Sessions" tab
                   </Typography>
                 </Box>
               )

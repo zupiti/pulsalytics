@@ -28,119 +28,6 @@ if (!document.querySelector('#pulsalytics-styles')) {
 }
 
 const drawerWidth = 280;
-                      label={status.label}
-                      color={status.color}
-                      size="small"
-                      icon={status.icon}
-                    />
-                  </TableCell>
-                  <TableCell align="center">
-                    <Badge badgeContent={detail.fastImages} color="primary">
-                      <Chip label={detail.totalImages} variant="outlined" />
-                    </Badge>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
-                      <TouchApp fontSize="small" />
-                      {detail.estimatedClicks}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <Typography variant="body2" fontWeight="bold">
-                        {formatDuration(detail.duration)}
-                      </Typography>
-                      {detail.isActive && (
-                        <Typography variant="caption" color="success.main">
-                          (em andamento)
-                        </Typography>
-                      )}
-                      {detail.isDisconnected && (
-                        <Typography variant="caption" color="error.main">
-                          (finalizada)
-                        </Typography>
-                      )}
-                    </Box>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <Typography variant="caption">
-                        {detail.isActive ?
-                          'Agora' :
-                          detail.lastImageTime.toLocaleTimeString()
-                        }
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {detail.isActive ?
-                          'Ativo' :
-                          detail.isDisconnected ?
-                            'Desconectado' :
-                            'Inativo'
-                        }
-                      </Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Box sx={{ display: 'flex', gap: 0.5 }}>
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onCreateVideo(sessionId);
-                        }}
-                        color="primary"
-                        title="Reproduzir vídeo"
-                      >
-                        <VideoLibrary />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDeleteSession(sessionId);
-                        }}
-                        color="error"
-                        title="Deletar sessão"
-                      >
-                        <Delete />
-                      </IconButton>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      {/* Aviso sobre sessões desconectadas */}
-      {disconnectedSessions.size > 0 && (
-        <Paper sx={{ p: 2, mt: 2, bgcolor: 'warning.light' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Warning color="warning" />
-            <Typography variant="body2" color="warning.dark">
-              {disconnectedSessions.size} sessão(ões) desconectada(s).
-              Use o botão de deletar para remover sessões que não serão mais utilizadas.
-            </Typography>
-          </Box>
-        </Paper>
-      )}
-
-      {/* Aviso sobre sessões desconectadas */}
-      {disconnectedSessions.size > 0 && (
-        <Paper sx={{ p: 2, mt: 2, bgcolor: 'warning.light' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Warning color="warning" />
-            <Typography variant="body2" color="warning.dark">
-              {disconnectedSessions.size} sessão(ões) desconectada(s).
-              Use o botão de deletar para remover sessões que não serão mais utilizadas.
-            </Typography>
-          </Box>
-        </Paper>
-      )}
-    </Box>
-  );
-});
 
 // Componente de Player de Vídeo Aprimorado - Memoizado
 const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, currentIndex, playbackSpeed, onPlayPause, onStop, onIndexChange, onSpeedChange, onDeleteSession, sessionStats, disconnectedSessions, sessionStatus }) {
@@ -180,21 +67,21 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
         label: 'Offline',
         color: 'error',
         icon: <SignalWifiOff />,
-        description: 'Usuário desconectado'
+        description: 'User disconnected'
       };
     } else if (isOnline) {
       return {
         label: 'Online',
         color: 'success',
         icon: <Visibility />,
-        description: 'Usuário ativo agora'
+        description: 'User active now'
       };
     } else {
       return {
         label: 'Timeout (20s)',
         color: 'warning',
         icon: <Schedule />,
-        description: 'Sem atividade há mais de 20 segundos'
+        description: 'No activity for more than 20 seconds'
       };
     }
   }, [isDisconnected, isOnline]);
@@ -203,7 +90,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
         <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <VideoLibrary /> Player de Sessão
+          <VideoLibrary /> Session Player
         </Typography>
         <Button
           variant="outlined"
@@ -213,7 +100,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
           onClick={() => onDeleteSession(sessionId)}
           sx={{ textTransform: 'none' }}
         >
-          Deletar Sessão
+          Delete Session
         </Button>
       </Box>
 
@@ -239,7 +126,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
               {/* Informações do Frame */}
               <Box sx={{ mb: 2, textAlign: 'center' }}>
                 <Typography variant="h6" color="primary">
-                  Frame {currentIndex + 1} de {images.length}
+                  Frame {currentIndex + 1} of {images.length}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {images[currentIndex]?.timestamp &&
@@ -300,12 +187,12 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
           <Grid item xs={12} md={4}>
             <Paper sx={{ p: 2, height: 'fit-content' }}>
               <Typography variant="h6" gutterBottom>
-                📊 Estatísticas da Sessão
+                📊 Session Statistics
               </Typography>
 
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="text.secondary">
-                  Sessão ID:
+                  Session ID:
                 </Typography>
                 <Typography variant="body2" sx={{ wordBreak: 'break-all', fontSize: '0.8rem' }}>
                   {sessionId}
@@ -328,7 +215,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
                     <Typography variant="h4" color="secondary">
                       {formatDuration(stats.duration)}
                     </Typography>
-                    <Typography variant="caption">Duração</Typography>
+                    <Typography variant="caption">Duration</Typography>
                   </Box>
                 </Grid>
                 <Grid item xs={6}>
@@ -344,7 +231,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
                     <Typography variant="h4" color="warning.main">
                       {Math.floor(stats.totalFrames / 2.5)}
                     </Typography>
-                    <Typography variant="caption">Cliques Est.</Typography>
+                    <Typography variant="caption">Estimated Clicks</Typography>
                   </Box>
                 </Grid>
               </Grid>
@@ -354,7 +241,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
               {/* Progresso da Reprodução */}
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" gutterBottom>
-                  Progresso da Reprodução
+                  Playback Progress
                 </Typography>
                 <LinearProgress
                   variant="determinate"
@@ -362,7 +249,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
                   sx={{ height: 8, borderRadius: 1 }}
                 />
                 <Typography variant="caption" color="text.secondary">
-                  {((currentIndex / (images.length - 1)) * 100).toFixed(1)}% completo
+                  {((currentIndex / (images.length - 1)) * 100).toFixed(1)}% complete
                 </Typography>
               </Box>
 
@@ -371,7 +258,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
               {/* Status da Sessão com Timeout */}
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" gutterBottom>
-                  Status da Sessão
+                  Session Status
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                   {(() => {
@@ -395,7 +282,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                   {getSessionStatus().description}
                   {!isDisconnected && !isOnline && (
-                    <span style={{ color: '#f57c00' }}> - Sistema detecta inatividade após 20s sem atualizações</span>
+                    <span style={{ color: '#f57c00' }}> - System detects inactivity after 20s without updates</span>
                   )}
                 </Typography>
               </Box>
@@ -405,7 +292,7 @@ const VideoPlayer = memo(function VideoPlayer({ sessionId, images, isPlaying, cu
       ) : (
         <Box sx={{ textAlign: 'center', py: 4 }}>
           <Typography variant="h6" color="text.secondary">
-            Nenhuma imagem encontrada para esta sessão
+            No images found for this session
           </Typography>
         </Box>
       )}
@@ -1023,7 +910,7 @@ function App() {
             sx={{ borderRadius: 1, mx: 1, my: 0.5 }}
           >
             <Timeline sx={{ mr: 1, color: currentTab === 1 ? '#90caf9' : '#bbb' }} />
-            <ListItemText primary="Sessões" />
+            <ListItemText primary="Sessions" />
           </ListItemButton>
         </ListItem>
     
@@ -1032,7 +919,7 @@ function App() {
       <Divider sx={{ bgcolor: '#444', my: 2 }} />
 
       <Typography variant="subtitle1" sx={{ px: 2, mb: 1, color: '#bbb' }}>
-        Sessões Ativas ({sortedSessionIds.length})
+        Sessions Active ({sortedSessionIds.length})
       </Typography>
     </>
   ), [currentTab, handleTabChange, sortedSessionIds.length]);
@@ -1094,7 +981,7 @@ function App() {
                     px: 1,
                     textTransform: 'uppercase'
                   }}>
-                    {isDisconnected ? 'Offline' : 'Inativo'}
+                    {isDisconnected ? 'Offline' : 'Inactive'}
                   </Typography>
                 </Divider>
               </ListItem>
@@ -1128,7 +1015,7 @@ function App() {
                     }
                     secondary={
                       <span style={{ color: '#bbb', fontSize: '0.75rem' }}>
-                        {`${groups[sessionId].length} frames • ${isOnline ? 'Online' : isDisconnected ? 'Offline' : 'Inativo'}`}
+                        {`${groups[sessionId].length} frames • ${isOnline ? 'Online' : isDisconnected ? 'Offline' : 'Inactive'}`}
                       </span>
                     }
                   />
@@ -1212,7 +1099,7 @@ function App() {
                 sx={{ borderRadius: 1, mx: 1, my: 0.5 }}
               >
                 <Timeline sx={{ mr: 1, color: currentTab === 1 ? '#90caf9' : '#bbb' }} />
-                <ListItemText primary="Sessões" />
+                <ListItemText primary="Sessions" />
               </ListItemButton>
             </ListItem>
         
@@ -1220,7 +1107,7 @@ function App() {
 
           <Divider sx={{ bgcolor: '#444', my: 2 }} />
 
-          <Typography variant="subtitle1" sx={{ px: 2, mb: 1, color: '#bbb' }}>Sessões Ativas ({sortedSessionIds.length})</Typography>
+          <Typography variant="subtitle1" sx={{ px: 2, mb: 1, color: '#bbb' }}>Sessions Active ({sortedSessionIds.length})</Typography>
           <List sx={{ 
             maxHeight: 'calc(100vh - 400px)', 
             overflow: 'auto',
@@ -1276,7 +1163,7 @@ function App() {
                           px: 1,
                           textTransform: 'uppercase'
                         }}>
-                          {isDisconnected ? 'Offline' : 'Inativo'}
+                          {isDisconnected ? 'Offline' : 'Inactive'}
                         </Typography>
                       </Divider>
                     </ListItem>
@@ -1310,7 +1197,7 @@ function App() {
                           }
                           secondary={
                             <span style={{ color: '#bbb', fontSize: '0.75rem' }}>
-                              {`${groups[sessionId].length} frames • ${isOnline ? 'Online' : isDisconnected ? 'Offline' : 'Inativo'}`}
+                              {`${groups[sessionId].length} frames • ${isOnline ? 'Online' : isDisconnected ? 'Offline' : 'Inactive'}`}
                             </span>
                           }
                         />
@@ -1378,7 +1265,7 @@ function App() {
                     Selecione uma sessão para reproduzir
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
-                    Escolha uma sessão na barra lateral ou na aba "Sessões"
+                    Escolha uma sessão na barra lateral ou na aba "Sessions"
                   </Typography>
                 </Box>
               )

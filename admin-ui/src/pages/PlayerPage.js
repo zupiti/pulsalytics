@@ -89,17 +89,17 @@ export default function PlayerPage({
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
         <Typography variant="h5" color="text.secondary" gutterBottom>
-          Nenhuma sessão selecionada
+          No session selected
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Selecione uma sessão para reproduzir
+          Select a session to play
         </Typography>
         <Button
           variant="contained"
           onClick={() => navigate('/sessions')}
           sx={{ mt: 2 }}
         >
-          Ver Sessões
+          View Sessions
         </Button>
       </Box>
     );
@@ -110,10 +110,10 @@ export default function PlayerPage({
       <Box sx={{ p: 3, maxWidth: 800, mx: 'auto' }}>
         <Alert severity="warning" sx={{ mb: 3 }}>
           <Typography variant="h6" gutterBottom>
-            Sessão sem imagens
+            Session without images
           </Typography>
           <Typography variant="body1">
-            A sessão "{sessionId}" não possui imagens ou não foi encontrada no sistema.
+            The session "{sessionId}" has no images or was not found in the system.
           </Typography>
         </Alert>
 
@@ -121,27 +121,27 @@ export default function PlayerPage({
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Info sx={{ mr: 1, color: 'info.main' }} />
             <Typography variant="h6">
-              Informações da Sessão
+              Session Information
             </Typography>
           </Box>
 
           <Typography variant="body2" color="text.secondary" gutterBottom>
-            ID da Sessão: <strong>{sessionId}</strong>
+            Session ID: <strong>{sessionId}</strong>
           </Typography>
 
           {sessionInfo && (
             <Box sx={{ mt: 2 }}>
               <Typography variant="body2" gutterBottom>
-                <strong>Status:</strong> {sessionInfo.status || 'Desconhecido'}
+                <strong>Status:</strong> {sessionInfo.status || 'Unknown'}
               </Typography>
               <Typography variant="body2" gutterBottom>
-                <strong>Existe:</strong> {sessionInfo.exists ? 'Sim' : 'Não'}
+                <strong>Exists:</strong> {sessionInfo.exists ? 'Yes' : 'No'}
               </Typography>
               <Typography variant="body2" gutterBottom>
-                <strong>Tem imagens:</strong> {sessionInfo.hasImages ? 'Sim' : 'Não'}
+                <strong>Has images:</strong> {sessionInfo.hasImages ? 'Yes' : 'No'}
               </Typography>
               <Typography variant="body2" gutterBottom>
-                <strong>Quantidade de imagens:</strong> {sessionInfo.imageCount || 0}
+                <strong>Image count:</strong> {sessionInfo.imageCount || 0}
               </Typography>
 
               {sessionInfo.message && (
@@ -153,7 +153,7 @@ export default function PlayerPage({
               {sessionInfo.possibleReasons && (
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="body2" gutterBottom>
-                    <strong>Possíveis motivos:</strong>
+                    <strong>Possible reasons:</strong>
                   </Typography>
                   <ul>
                     {sessionInfo.possibleReasons.map((reason, index) => (
@@ -171,30 +171,30 @@ export default function PlayerPage({
               {sessionInfo.websocket && (
                 <Box sx={{ mt: 3 }}>
                   <Typography variant="h6" gutterBottom>
-                    🔍 Diagnósticos Avançados
+                    🔍 Advanced Diagnostics
                   </Typography>
 
                   <Typography variant="body2" gutterBottom>
-                    <strong>Servidor WebSocket (porta 3002):</strong>
+                    <strong>WebSocket Server (port 3002):</strong>
                   </Typography>
                   <ul>
-                    <li>Sessão existe: {sessionInfo.websocket.exists ? '✅ Sim' : '❌ Não'}</li>
-                    <li>Sessão ativa: {sessionInfo.websocket.isActive ? '✅ Sim' : '❌ Não'}</li>
-                    <li>Arquivos encontrados: {sessionInfo.websocket.fileCount || 0}</li>
+                    <li>Session exists: {sessionInfo.websocket.exists ? '✅ Yes' : '❌ No'}</li>
+                    <li>Active session: {sessionInfo.websocket.isActive ? '✅ Yes' : '❌ No'}</li>
+                    <li>Files found: {sessionInfo.websocket.fileCount || 0}</li>
                   </ul>
 
                   {sessionInfo.websocket.sessionInfo && (
                     <Box sx={{ mt: 2 }}>
                       <Typography variant="body2" gutterBottom>
-                        <strong>Detalhes da sessão:</strong>
+                        <strong>Session details:</strong>
                       </Typography>
                       <ul>
-                        <li>Início: {new Date(sessionInfo.websocket.sessionInfo.startTime).toLocaleString()}</li>
-                        <li>Última atividade: {new Date(sessionInfo.websocket.sessionInfo.lastActivity).toLocaleString()}</li>
-                        <li>Duração: {sessionInfo.websocket.sessionInfo.duration}s</li>
-                        <li>Imagens recebidas: {sessionInfo.websocket.sessionInfo.imagesReceived}</li>
-                        <li>Pontos de mouse: {sessionInfo.websocket.sessionInfo.mousePoints}</li>
-                        <li>Cliques: {sessionInfo.websocket.sessionInfo.clicks}</li>
+                        <li>Start: {new Date(sessionInfo.websocket.sessionInfo.startTime).toLocaleString()}</li>
+                        <li>Last activity: {new Date(sessionInfo.websocket.sessionInfo.lastActivity).toLocaleString()}</li>
+                        <li>Duration: {sessionInfo.websocket.sessionInfo.duration}s</li>
+                        <li>Images received: {sessionInfo.websocket.sessionInfo.imagesReceived}</li>
+                        <li>Mouse points: {sessionInfo.websocket.sessionInfo.mousePoints}</li>
+                        <li>Clicks: {sessionInfo.websocket.sessionInfo.clicks}</li>
                         <li>URL: {sessionInfo.websocket.sessionInfo.url}</li>
                       </ul>
                     </Box>
@@ -203,7 +203,7 @@ export default function PlayerPage({
                   {sessionInfo.websocket.files && sessionInfo.websocket.files.length > 0 && (
                     <Box sx={{ mt: 2 }}>
                       <Typography variant="body2" gutterBottom>
-                        <strong>Arquivos encontrados:</strong>
+                        <strong>Files found:</strong>
                       </Typography>
                       <ul>
                         {sessionInfo.websocket.files.map((file, index) => (
@@ -221,12 +221,12 @@ export default function PlayerPage({
                   {sessionInfo.diagnostics && (
                     <Box sx={{ mt: 2 }}>
                       <Typography variant="body2" gutterBottom>
-                        <strong>Comparação entre servidores:</strong>
+                        <strong>Server comparison:</strong>
                       </Typography>
                       <ul>
-                        <li>Servidor básico (3001): {sessionInfo.diagnostics.comparison.arquivosNoBasico} arquivos</li>
-                        <li>Servidor WebSocket (3002): {sessionInfo.diagnostics.comparison.arquivosNoWebSocket} arquivos</li>
-                        <li>Sincronização: {sessionInfo.diagnostics.comparison.arquivosNoBasico === sessionInfo.diagnostics.comparison.arquivosNoWebSocket ? '✅ OK' : '⚠️ Dessincronia'}</li>
+                        <li>Basic server (3001): {sessionInfo.diagnostics.comparison.arquivosNoBasico} files</li>
+                        <li>WebSocket server (3002): {sessionInfo.diagnostics.comparison.arquivosNoWebSocket} files</li>
+                        <li>Synchronization: {sessionInfo.diagnostics.comparison.arquivosNoBasico === sessionInfo.diagnostics.comparison.arquivosNoWebSocket ? '✅ OK' : '⚠️ Out of sync'}</li>
                       </ul>
                     </Box>
                   )}
@@ -236,10 +236,10 @@ export default function PlayerPage({
               {sessionInfo.wsError && (
                 <Alert severity="warning" sx={{ mt: 2 }}>
                   <Typography variant="body2">
-                    <strong>Aviso:</strong> {sessionInfo.wsError}
+                    <strong>Warning:</strong> {sessionInfo.wsError}
                   </Typography>
                   <Typography variant="body2" sx={{ mt: 1 }}>
-                    Para diagnósticos completos, certifique-se de que o servidor WebSocket está rodando.
+                    For complete diagnostics, make sure the WebSocket server is running.
                   </Typography>
                 </Alert>
               )}
@@ -255,7 +255,7 @@ export default function PlayerPage({
               onClick={fetchSessionInfo}
               disabled={loadingInfo}
             >
-              {loadingInfo ? 'Carregando...' : 'Verificar Detalhes'}
+              {loadingInfo ? 'Loading...' : 'Check Details'}
             </Button>
 
             <Button
@@ -263,7 +263,7 @@ export default function PlayerPage({
               startIcon={<Refresh />}
               onClick={() => window.location.reload()}
             >
-              Recarregar Página
+              Reload Page
             </Button>
 
             <Button
@@ -271,20 +271,20 @@ export default function PlayerPage({
               startIcon={<ArrowBack />}
               onClick={() => navigate('/sessions')}
             >
-              Voltar para Sessões
+              Back to Sessions
             </Button>
           </Box>
         </Paper>
 
         <Alert severity="info">
           <Typography variant="body2">
-            <strong>Dica:</strong> Se esta sessão deveria ter imagens, verifique se:
+            <strong>Tip:</strong> If this session should have images, check if:
           </Typography>
           <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
-            <li>O Flutter está executando e conectado ao WebSocket</li>
-            <li>O servidor WebSocket está rodando na porta 3002</li>
-            <li>Não há erros de rede ou CORS</li>
-            <li>A sessão não foi deletada acidentalmente</li>
+            <li>Flutter is running and connected to the WebSocket</li>
+            <li>The WebSocket server is running on port 3002</li>
+            <li>There are no network or CORS errors</li>
+            <li>The session was not accidentally deleted</li>
           </ul>
         </Alert>
       </Box>

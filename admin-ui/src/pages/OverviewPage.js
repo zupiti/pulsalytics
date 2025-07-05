@@ -28,13 +28,13 @@ const MOCK_STATS = {
 };
 
 export default function OverviewPage({ sessionStats, lastUpdateTime, wsStats }) {
-  // Se não há dados, mostra um estado vazio
+  // If there is no data, show an empty state
   if (!sessionStats || !sessionStats.totalSessions) {
     return (
       <div style={{ textAlign: 'center', padding: 40 }}>
-        <img src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png" alt="Sem dados" width={120} style={{ opacity: 0.3, marginBottom: 16 }} />
-        <h2>Nenhuma conexão ou dados disponíveis</h2>
-        <p>Verifique se o backend está online ou aguarde novas sessões.</p>
+        <img src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png" alt="No data" width={120} style={{ opacity: 0.3, marginBottom: 16 }} />
+        <h2>No connection or data available</h2>
+        <p>Check if the backend is online or wait for new sessions.</p>
       </div>
     );
   }

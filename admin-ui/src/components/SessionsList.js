@@ -78,7 +78,7 @@ export const SessionsList = memo(function SessionsList({
     return `${icon} ${displayName}`;
   }, []);
 
-  const TIMEOUT_THRESHOLD = 20 * 1000; // 20 segundos
+  const TIMEOUT_THRESHOLD = 20 * 1000; // 20 seconds
 
   const getSessionStatus = useCallback((sessionId, detail) => {
     const isDisconnected = disconnectedSessions.has(sessionId);
@@ -92,28 +92,28 @@ export const SessionsList = memo(function SessionsList({
         label: 'Offline',
         color: 'error',
         icon: <SignalWifiOff fontSize="small" />,
-        description: 'Usuário desconectado'
+        description: 'User disconnected'
       };
     } else if (!isTimedOut && detail.isActive) {
       return {
         label: 'Online',
         color: 'success',
         icon: <Visibility fontSize="small" />,
-        description: 'Usuário ativo agora'
+        description: 'User active now'
       };
     } else if (isTimedOut) {
       return {
-        label: 'Inativo',
+        label: 'Inactive',
         color: 'warning',
         icon: <Schedule fontSize="small" />,
-        description: 'Sem atividade há mais de 20 segundos'
+        description: 'No activity for more than 20 seconds'
       };
     } else {
       return {
         label: 'Offline',
         color: 'warning',
         icon: <Schedule fontSize="small" />,
-        description: 'Usuário inativo'
+        description: 'User inactive'
       };
     }
   }, [disconnectedSessions, sessionStatus]);
@@ -132,7 +132,7 @@ export const SessionsList = memo(function SessionsList({
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
         <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Timeline /> Sessões Detalhadas
+          <Timeline /> Detailed Sessions
         </Typography>
 
         {/* Resumo de Status */}
@@ -151,7 +151,7 @@ export const SessionsList = memo(function SessionsList({
           />
           {sessionCounts.inactiveCount > 0 && (
             <Chip
-              label={`${sessionCounts.inactiveCount} Inativo`}
+              label={`${sessionCounts.inactiveCount} Inactive`}
               color="warning"
               size="small"
               icon={<Schedule fontSize="small" />}
@@ -164,13 +164,13 @@ export const SessionsList = memo(function SessionsList({
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Sessão</TableCell>
+              <TableCell>Session</TableCell>
               <TableCell align="center">Status</TableCell>
-              <TableCell align="center">Capturas</TableCell>
-              <TableCell align="center">Cliques</TableCell>
-              <TableCell align="center">Duração</TableCell>
-              <TableCell align="center">Última Atividade</TableCell>
-              <TableCell align="center">Ações</TableCell>
+              <TableCell align="center">Captures</TableCell>
+              <TableCell align="center">Clicks</TableCell>
+              <TableCell align="center">Duration</TableCell>
+              <TableCell align="center">Last Activity</TableCell>
+              <TableCell align="center">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -205,7 +205,7 @@ export const SessionsList = memo(function SessionsList({
                           {getSessionDisplayName(sessionId)}
                           {isDisconnected && (
                             <Chip
-                              label="DESCONECTADO"
+                              label="DISCONNECTED"
                               size="small"
                               color="error"
                               sx={{ ml: 1, fontSize: '0.7rem' }}
@@ -244,12 +244,12 @@ export const SessionsList = memo(function SessionsList({
                       </Typography>
                       {detail.isActive && (
                         <Typography variant="caption" color="success.main">
-                          (em andamento)
+                          (in progress)
                         </Typography>
                       )}
                       {detail.isDisconnected && (
                         <Typography variant="caption" color="error.main">
-                          (finalizada)
+                          (finished)
                         </Typography>
                       )}
                     </Box>
@@ -258,16 +258,16 @@ export const SessionsList = memo(function SessionsList({
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                       <Typography variant="caption">
                         {detail.isActive ?
-                          'Agora' :
+                          'Now' :
                           detail.lastImageTime.toLocaleTimeString()
                         }
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         {detail.isActive ?
-                          'Ativo' :
+                          'Active' :
                           detail.isDisconnected ?
-                            'Desconectado' :
-                            'Inativo'
+                            'Disconnected' :
+                            'Inactive'
                         }
                       </Typography>
                     </Box>
@@ -311,8 +311,8 @@ export const SessionsList = memo(function SessionsList({
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Warning color="warning" />
             <Typography variant="body2" color="warning.dark">
-              {disconnectedSessions.size} sessão(ões) desconectada(s).
-              Use o botão de deletar para remover sessões que não serão mais utilizadas.
+              {disconnectedSessions.size} session(s) disconnected.
+              Use the delete button to remove sessions that will no longer be used.
             </Typography>
           </Box>
         </Paper>
