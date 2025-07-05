@@ -40,8 +40,8 @@ app.use('/admin', express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Servir o arquivo heatmap.js
-app.get('/flutter_heatmap_tracker/web/heatmap.js', (req, res) => {
-    const heatmapPath = path.join(__dirname, '../flutter_heatmap_tracker/web/heatmap.js');
+app.get('/flutter_pulsalytics/web/heatmap.js', (req, res) => {
+    const heatmapPath = path.join(__dirname, '../flutter_pulsalytics/web/heatmap.js');
     if (fs.existsSync(heatmapPath)) {
         res.setHeader('Content-Type', 'application/javascript');
         res.sendFile(heatmapPath);

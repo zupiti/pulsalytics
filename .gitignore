@@ -23,3 +23,4 @@ Thumbs.db
 heatmap-server/uploads/**
 flutter_heatmap_tracker/example/**
 flutter_heatmap_tracker/example/.dart_tool/**
+flutter_heatmap_tracker/example/.dart_tool/

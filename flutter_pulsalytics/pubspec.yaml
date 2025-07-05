@@ -1,0 +1,19 @@
+name: flutter_pulsalytics
+description: A comprehensive Flutter web heatmap tracking library that captures user interactions, mouse movements, and generates session analytics with real-time visualization.
+version: 1.0.0
+homepage: https://github.com/your-username/flutter_pulsalytics
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.4.0
+  universal_html: ^2.2.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
