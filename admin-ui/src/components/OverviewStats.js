@@ -1,13 +1,20 @@
 import React, { memo, useCallback, useMemo } from 'react';
 import {
-  Box, Typography, Card, Grid, Memory, NetworkCheck, Table, TableBody, TableCell, 
-  TableContainer, TableHead, TableRow, Chip, Accordion, AccordionSummary, 
+  Box, Typography, Card, Grid, Table, TableBody, TableCell,
+  TableContainer, TableHead, TableRow, Chip, Accordion, AccordionSummary,
   AccordionDetails, Paper
 } from '@mui/material';
-import {
-  SettingsEthernet, WifiTethering, CloudUpload, ExpandMore, Person, 
-  Visibility, TouchApp, Schedule, Analytics
-} from '@mui/icons-material';
+import SettingsEthernet from '@mui/icons-material/SettingsEthernet';
+import WifiTethering from '@mui/icons-material/WifiTethering';
+import CloudUpload from '@mui/icons-material/CloudUpload';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import Person from '@mui/icons-material/Person';
+import NetworkCheck from '@mui/icons-material/NetworkCheck';
+import Memory from '@mui/icons-material/Memory';
+import Analytics from '@mui/icons-material/Analytics';
+import Visibility from '@mui/icons-material/Visibility';
+import TouchApp from '@mui/icons-material/TouchApp';
+import Schedule from '@mui/icons-material/Schedule';
 
 // Componente para monitorar WebSocket
 export const WebSocketMonitor = memo(function WebSocketMonitor({ wsStats, activeConnections }) {

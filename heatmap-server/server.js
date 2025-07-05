@@ -54,7 +54,7 @@ app.post('/upload', upload.single('image'), (req, res) => {
     }
 
     res.json({ success: true, filename: req.file.filename });
-
+    
     // Broadcast específico da nova imagem com informações da sessão
     broadcastNewImage(sessionInfo, req.file.filename);
 });
@@ -224,15 +224,15 @@ function broadcastNewImage(sessionId = null, filename = null) {
         type: 'new-image',
         timestamp: Date.now()
     };
-
+    
     if (sessionId) {
         message.sessionId = sessionId;
     }
-
+    
     if (filename) {
         message.filename = filename;
     }
-
+    
     wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) {
             client.send(JSON.stringify(message));
