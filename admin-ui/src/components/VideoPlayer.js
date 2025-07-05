@@ -348,45 +348,6 @@ export const VideoPlayer = memo(function VideoPlayer({
     }
   }, [currentIndex, images, imageLoaded, drawHeatmap]);
 
-  // Buscar dados de mouse e cliques (mantida para compatibilidade)
-  const fetchMouseData = useCallback(async () => {
-    if (!sessionId) return;
-
-    try {
-      // Buscar dados de mouse
-      const mouseResponse = await fetch(`${apiUrl}/api/mouse-data/${sessionId}`);
-      if (mouseResponse.ok) {
-        const mousePoints = await mouseResponse.json();
-        setMouseData(mousePoints);
-      }
-
-      // Buscar dados de cliques
-      const clickResponse = await fetch(`${apiUrl}/api/click-data/${sessionId}`);
-      if (clickResponse.ok) {
-        const clickPoints = await clickResponse.json();
-        setClickData(clickPoints);
-      }
-
-      setLastDataUpdate(Date.now());
-    } catch (error) {
-    }
-  }, [sessionId, apiUrl]);
-
-  // Buscar dados iniciais e configurar atualização automática
-  useEffect(() => {
-    if (!sessionId) return;
-
-    // Buscar dados iniciais
-    fetchMouseData();
-
-    // Configurar atualização automática a cada 5 segundos
-    const interval = setInterval(() => {
-      fetchMouseData();
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [sessionId, fetchMouseData]);
-
   // Redesenhar quando os dados ou configurações mudarem
   useEffect(() => {
     if (imageLoaded) {
@@ -874,15 +835,6 @@ export const VideoPlayer = memo(function VideoPlayer({
                       fontWeight: 600
                     }}>
                       🎯 Interações
-                      {lastDataUpdate > 0 && (
-                        <Chip
-                          label="API"
-                          size="small"
-                          color="warning"
-                          variant="outlined"
-                          sx={{ ml: 1 }}
-                        />
-                      )}
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                       <Chip
