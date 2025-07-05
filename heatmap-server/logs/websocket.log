@@ -296,3 +296,1187 @@ Require stack:
 📋 Sessões ativas:
    🔸 7ce640e8-f17c-463b-9984-a9dcaf46876f: 0 imagens, 177s, ativo
    🔸 32aa1113-631d-4c8c-af52-8d3294696ba6: 0 imagens, 120s, ativo
+📈 Status: 2 clientes ativos, 2 sessões
+📋 Sessões ativas:
+   🔸 7ce640e8-f17c-463b-9984-a9dcaf46876f: 0 imagens, 237s, ativo
+   🔸 32aa1113-631d-4c8c-af52-8d3294696ba6: 0 imagens, 180s, ativo
+📈 Status: 2 clientes ativos, 2 sessões
+📋 Sessões ativas:
+   🔸 7ce640e8-f17c-463b-9984-a9dcaf46876f: 0 imagens, 297s, ativo
+   🔸 32aa1113-631d-4c8c-af52-8d3294696ba6: 0 imagens, 240s, ativo
+✅ Nova conexão WebSocket: undefined
+✅ Nova conexão WebSocket: ::1
+✅ Nova conexão WebSocket: ::1
+📈 Status: 2 clientes ativos, 2 sessões
+📋 Sessões ativas:
+   🔸 7ce640e8-f17c-463b-9984-a9dcaf46876f: 0 imagens, 357s, ativo
+   🔸 32aa1113-631d-4c8c-af52-8d3294696ba6: 0 imagens, 300s, ativo
+📈 Status: 2 clientes ativos, 2 sessões
+📋 Sessões ativas:
+   🔸 7ce640e8-f17c-463b-9984-a9dcaf46876f: 0 imagens, 417s, ativo
+   🔸 32aa1113-631d-4c8c-af52-8d3294696ba6: 0 imagens, 360s, ativo
+📈 Status: 2 clientes ativos, 2 sessões
+📋 Sessões ativas:
+   🔸 7ce640e8-f17c-463b-9984-a9dcaf46876f: 0 imagens, 477s, ativo
+   🔸 32aa1113-631d-4c8c-af52-8d3294696ba6: 0 imagens, 420s, ativo
+📈 Status: 2 clientes ativos, 2 sessões
+📋 Sessões ativas:
+   🔸 7ce640e8-f17c-463b-9984-a9dcaf46876f: 0 imagens, 537s, ativo
+   🔸 32aa1113-631d-4c8c-af52-8d3294696ba6: 0 imagens, 480s, ativo
+✅ Nova conexão WebSocket: ::1
+📱 Sessão iniciada: b027d690-f86a-42fe-85f8-5b80cd532e6d
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:57:21)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_started {
+  sessionId: 'b027d690-f86a-42fe-85f8-5b80cd532e6d',
+  url: 'http://localhost:57087/',
+  timestamp: 1751700904531
+}
+🔚 Sessão finalizada: b027d690-f86a-42fe-85f8-5b80cd532e6d
+📊 Resumo da Sessão b027d690-f86a-42fe-85f8-5b80cd532e6d:
+   ⏱️  Duração: 5s
+   📸 Imagens: 0
+   🖱️  Pontos de Mouse: 0
+   👆 Cliques: 0
+   🌐 URL: http://localhost:57087/
+⚠️  DIAGNÓSTICO - Sessão b027d690-f86a-42fe-85f8-5b80cd532e6d sem imagens:
+   - Duração da sessão: 5s
+   - Última atividade: 05/07/2025, 04:35:04
+   - URL da sessão: http://localhost:57087/
+   - Possíveis causas:
+     • Flutter não está enviando imagens
+     • Problemas de conectividade WebSocket
+     • Sessão muito curta (< 10s)
+     • Problemas no processo de captura
+   - Nenhum arquivo encontrado no diretório de uploads
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: 'b027d690-f86a-42fe-85f8-5b80cd532e6d',
+  timestamp: 1751700909717
+}
+🔌 Conexão WebSocket fechada: b027d690-f86a-42fe-85f8-5b80cd532e6d
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:321:13)
+    at WebSocket.emit (node:events:536:35)
+    at WebSocket.emitClose (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:272:10)
+    at Socket.socketOnClose (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1341:15)
+    at Socket.emit (node:events:524:28) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+🔚 Sessão finalizada: 32aa1113-631d-4c8c-af52-8d3294696ba6
+📊 Resumo da Sessão 32aa1113-631d-4c8c-af52-8d3294696ba6:
+   ⏱️  Duração: 525s
+   📸 Imagens: 0
+   🖱️  Pontos de Mouse: 452
+   👆 Cliques: 21
+   🌐 URL: http://localhost:5000/
+⚠️  DIAGNÓSTICO - Sessão 32aa1113-631d-4c8c-af52-8d3294696ba6 sem imagens:
+   - Duração da sessão: 525s
+   - Última atividade: 05/07/2025, 04:27:46
+   - URL da sessão: http://localhost:5000/
+   - Possíveis causas:
+     • Flutter não está enviando imagens
+     • Problemas de conectividade WebSocket
+     • Sessão muito curta (< 10s)
+     • Problemas no processo de captura
+   - Nenhum arquivo encontrado no diretório de uploads
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: '32aa1113-631d-4c8c-af52-8d3294696ba6',
+  timestamp: 1751700911653
+}
+✅ Nova conexão WebSocket: ::1
+📱 Sessão iniciada: cfb40a29-8854-4a10-8fbb-d2aa5968c45f
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:57:21)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_started {
+  sessionId: 'cfb40a29-8854-4a10-8fbb-d2aa5968c45f',
+  url: 'http://localhost:57087/',
+  timestamp: 1751700912135
+}
+✅ Nova conexão WebSocket: ::1
+📱 Sessão iniciada: 3c49eebe-3297-4167-8403-9785d679b456
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:57:21)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_started {
+  sessionId: '3c49eebe-3297-4167-8403-9785d679b456',
+  url: 'http://localhost:5000/',
+  timestamp: 1751700912589
+}
+🧹 Executando limpeza de sessões inativas...
+📈 Status: 3 clientes ativos, 3 sessões
+📋 Sessões ativas:
+   🔸 7ce640e8-f17c-463b-9984-a9dcaf46876f: 0 imagens, 597s, ativo
+   🔸 cfb40a29-8854-4a10-8fbb-d2aa5968c45f: 0 imagens, 15s, ativo
+   🔸 3c49eebe-3297-4167-8403-9785d679b456: 0 imagens, 15s, ativo
+👆 Dados de cliques recebidos: 1 cliques da sessão cfb40a29-8854-4a10-8fbb-d2aa5968c45f
+📁 Dados de cliques salvos: click_data_cfb40a29-8854-4a10-8fbb-d2aa5968c45f_1751700931462.json
+🖱️ Dados de mouse recebidos: 61 pontos da sessão cfb40a29-8854-4a10-8fbb-d2aa5968c45f
+📁 Dados de mouse salvos: mouse_data_cfb40a29-8854-4a10-8fbb-d2aa5968c45f_1751700932135.json
+👆 Dados de cliques recebidos: 2 cliques da sessão cfb40a29-8854-4a10-8fbb-d2aa5968c45f
+📁 Dados de cliques salvos: click_data_cfb40a29-8854-4a10-8fbb-d2aa5968c45f_1751700932265.json
+👆 Dados de cliques recebidos: 3 cliques da sessão cfb40a29-8854-4a10-8fbb-d2aa5968c45f
+📁 Dados de cliques salvos: click_data_cfb40a29-8854-4a10-8fbb-d2aa5968c45f_1751700932824.json
+🖱️ Dados de mouse recebidos: 41 pontos da sessão cfb40a29-8854-4a10-8fbb-d2aa5968c45f
+📁 Dados de mouse salvos: mouse_data_cfb40a29-8854-4a10-8fbb-d2aa5968c45f_1751700942136.json
+✅ Nova conexão WebSocket: ::1
+📱 Sessão iniciada: 13e86b35-e5c1-4207-8595-ea81e1fcb74a
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:57:21)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_started {
+  sessionId: '13e86b35-e5c1-4207-8595-ea81e1fcb74a',
+  url: 'http://localhost:57087/',
+  timestamp: 1751700965633
+}
+✅ Nova conexão WebSocket: ::1
+📱 Sessão iniciada: d29a646e-1e37-4816-90ac-4f1e3ef2cf33
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:57:21)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_started {
+  sessionId: 'd29a646e-1e37-4816-90ac-4f1e3ef2cf33',
+  url: 'http://localhost:57087/',
+  timestamp: 1751700974345
+}
+📈 Status: 5 clientes ativos, 5 sessões
+📋 Sessões ativas:
+   🔸 7ce640e8-f17c-463b-9984-a9dcaf46876f: 0 imagens, 657s, ativo
+   🔸 cfb40a29-8854-4a10-8fbb-d2aa5968c45f: 0 imagens, 75s, ativo
+   🔸 3c49eebe-3297-4167-8403-9785d679b456: 0 imagens, 75s, ativo
+   🔸 13e86b35-e5c1-4207-8595-ea81e1fcb74a: 0 imagens, 21s, ativo
+   🔸 d29a646e-1e37-4816-90ac-4f1e3ef2cf33: 0 imagens, 13s, ativo
+🔚 Sessão finalizada: cfb40a29-8854-4a10-8fbb-d2aa5968c45f
+📊 Resumo da Sessão cfb40a29-8854-4a10-8fbb-d2aa5968c45f:
+   ⏱️  Duração: 83s
+   📸 Imagens: 0
+   🖱️  Pontos de Mouse: 102
+   👆 Cliques: 6
+   🌐 URL: http://localhost:57087/
+⚠️  DIAGNÓSTICO - Sessão cfb40a29-8854-4a10-8fbb-d2aa5968c45f sem imagens:
+   - Duração da sessão: 83s
+   - Última atividade: 05/07/2025, 04:35:42
+   - URL da sessão: http://localhost:57087/
+   - Possíveis causas:
+     • Flutter não está enviando imagens
+     • Problemas de conectividade WebSocket
+     • Sessão muito curta (< 10s)
+     • Problemas no processo de captura
+   - Arquivos encontrados: 5
+     📄 click_data_cfb40a29-8854-4a10-8fbb-d2aa5968c45f_1751700931462.json
+     📄 click_data_cfb40a29-8854-4a10-8fbb-d2aa5968c45f_1751700932265.json
+     📄 click_data_cfb40a29-8854-4a10-8fbb-d2aa5968c45f_1751700932824.json
+     📄 mouse_data_cfb40a29-8854-4a10-8fbb-d2aa5968c45f_1751700932135.json
+     📄 mouse_data_cfb40a29-8854-4a10-8fbb-d2aa5968c45f_1751700942136.json
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: 'cfb40a29-8854-4a10-8fbb-d2aa5968c45f',
+  timestamp: 1751700994805
+}
+🔚 Sessão finalizada: 32aa1113-631d-4c8c-af52-8d3294696ba6
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: '32aa1113-631d-4c8c-af52-8d3294696ba6',
+  timestamp: 1751700994806
+}
+🔚 Sessão finalizada: 13e86b35-e5c1-4207-8595-ea81e1fcb74a
+📊 Resumo da Sessão 13e86b35-e5c1-4207-8595-ea81e1fcb74a:
+   ⏱️  Duração: 29s
+   📸 Imagens: 0
+   🖱️  Pontos de Mouse: 0
+   👆 Cliques: 0
+   🌐 URL: http://localhost:57087/
+⚠️  DIAGNÓSTICO - Sessão 13e86b35-e5c1-4207-8595-ea81e1fcb74a sem imagens:
+   - Duração da sessão: 29s
+   - Última atividade: 05/07/2025, 04:36:05
+   - URL da sessão: http://localhost:57087/
+   - Possíveis causas:
+     • Flutter não está enviando imagens
+     • Problemas de conectividade WebSocket
+     • Sessão muito curta (< 10s)
+     • Problemas no processo de captura
+   - Nenhum arquivo encontrado no diretório de uploads
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: '13e86b35-e5c1-4207-8595-ea81e1fcb74a',
+  timestamp: 1751700994806
+}
+🔚 Sessão finalizada: d29a646e-1e37-4816-90ac-4f1e3ef2cf33
+📊 Resumo da Sessão d29a646e-1e37-4816-90ac-4f1e3ef2cf33:
+   ⏱️  Duração: 20s
+   📸 Imagens: 0
+   🖱️  Pontos de Mouse: 0
+   👆 Cliques: 0
+   🌐 URL: http://localhost:57087/
+⚠️  DIAGNÓSTICO - Sessão d29a646e-1e37-4816-90ac-4f1e3ef2cf33 sem imagens:
+   - Duração da sessão: 20s
+   - Última atividade: 05/07/2025, 04:36:14
+   - URL da sessão: http://localhost:57087/
+   - Possíveis causas:
+     • Flutter não está enviando imagens
+     • Problemas de conectividade WebSocket
+     • Sessão muito curta (< 10s)
+     • Problemas no processo de captura
+   - Nenhum arquivo encontrado no diretório de uploads
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: 'd29a646e-1e37-4816-90ac-4f1e3ef2cf33',
+  timestamp: 1751700994807
+}
+🖱️ Dados de mouse recebidos: 130 pontos da sessão 3c49eebe-3297-4167-8403-9785d679b456
+📁 Dados de mouse salvos: mouse_data_3c49eebe-3297-4167-8403-9785d679b456_1751701002590.json
+📈 Status: 2 clientes ativos, 2 sessões
+📋 Sessões ativas:
+   🔸 7ce640e8-f17c-463b-9984-a9dcaf46876f: 0 imagens, 717s, ativo
+   🔸 3c49eebe-3297-4167-8403-9785d679b456: 0 imagens, 135s, ativo
+🔚 Sessão finalizada: cfb40a29-8854-4a10-8fbb-d2aa5968c45f
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: 'cfb40a29-8854-4a10-8fbb-d2aa5968c45f',
+  timestamp: 1751701082548
+}
+🔚 Sessão finalizada: 13e86b35-e5c1-4207-8595-ea81e1fcb74a
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: '13e86b35-e5c1-4207-8595-ea81e1fcb74a',
+  timestamp: 1751701082549
+}
+🔚 Sessão finalizada: d29a646e-1e37-4816-90ac-4f1e3ef2cf33
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: 'd29a646e-1e37-4816-90ac-4f1e3ef2cf33',
+  timestamp: 1751701082550
+}
+🔚 Sessão finalizada: 32aa1113-631d-4c8c-af52-8d3294696ba6
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: '32aa1113-631d-4c8c-af52-8d3294696ba6',
+  timestamp: 1751701082550
+}
+👆 Dados de cliques recebidos: 1 cliques da sessão 3c49eebe-3297-4167-8403-9785d679b456
+📁 Dados de cliques salvos: click_data_3c49eebe-3297-4167-8403-9785d679b456_1751701085437.json
+🔚 Sessão finalizada: 3c49eebe-3297-4167-8403-9785d679b456
+📊 Resumo da Sessão 3c49eebe-3297-4167-8403-9785d679b456:
+   ⏱️  Duração: 177s
+   📸 Imagens: 0
+   🖱️  Pontos de Mouse: 130
+   👆 Cliques: 1
+   🌐 URL: http://localhost:5000/
+⚠️  DIAGNÓSTICO - Sessão 3c49eebe-3297-4167-8403-9785d679b456 sem imagens:
+   - Duração da sessão: 177s
+   - Última atividade: 05/07/2025, 04:38:05
+   - URL da sessão: http://localhost:5000/
+   - Possíveis causas:
+     • Flutter não está enviando imagens
+     • Problemas de conectividade WebSocket
+     • Sessão muito curta (< 10s)
+     • Problemas no processo de captura
+   - Arquivos encontrados: 2
+     📄 click_data_3c49eebe-3297-4167-8403-9785d679b456_1751701085437.json
+     📄 mouse_data_3c49eebe-3297-4167-8403-9785d679b456_1751701002590.json
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: '3c49eebe-3297-4167-8403-9785d679b456',
+  timestamp: 1751701089892
+}
+🔌 Conexão WebSocket fechada: 3c49eebe-3297-4167-8403-9785d679b456
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:321:13)
+    at WebSocket.emit (node:events:536:35)
+    at WebSocket.emitClose (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:272:10)
+    at Socket.socketOnClose (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1341:15)
+    at Socket.emit (node:events:524:28) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+✅ Nova conexão WebSocket: ::1
+📱 Sessão iniciada: 55837685-5480-4822-baf5-31b6d161e08c
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:57:21)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_started {
+  sessionId: '55837685-5480-4822-baf5-31b6d161e08c',
+  url: 'http://localhost:5000/',
+  timestamp: 1751701091739
+}
+🖱️ Dados de mouse recebidos: 44 pontos da sessão 55837685-5480-4822-baf5-31b6d161e08c
+📁 Dados de mouse salvos: mouse_data_55837685-5480-4822-baf5-31b6d161e08c_1751701101742.json
+📈 Status: 2 clientes ativos, 2 sessões
+📋 Sessões ativas:
+   🔸 7ce640e8-f17c-463b-9984-a9dcaf46876f: 0 imagens, 777s, ativo
+   🔸 55837685-5480-4822-baf5-31b6d161e08c: 0 imagens, 15s, ativo
+🖱️ Dados de mouse recebidos: 1 pontos da sessão 55837685-5480-4822-baf5-31b6d161e08c
+📁 Dados de mouse salvos: mouse_data_55837685-5480-4822-baf5-31b6d161e08c_1751701111742.json
+🖱️ Dados de mouse recebidos: 7 pontos da sessão 55837685-5480-4822-baf5-31b6d161e08c
+📁 Dados de mouse salvos: mouse_data_55837685-5480-4822-baf5-31b6d161e08c_1751701131986.json
+📈 Status: 2 clientes ativos, 2 sessões
+📋 Sessões ativas:
+   🔸 7ce640e8-f17c-463b-9984-a9dcaf46876f: 0 imagens, 837s, ativo
+   🔸 55837685-5480-4822-baf5-31b6d161e08c: 0 imagens, 75s, ativo
+🔚 Sessão finalizada: 32aa1113-631d-4c8c-af52-8d3294696ba6
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: '32aa1113-631d-4c8c-af52-8d3294696ba6',
+  timestamp: 1751701170292
+}
+🔚 Sessão finalizada: cfb40a29-8854-4a10-8fbb-d2aa5968c45f
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: 'cfb40a29-8854-4a10-8fbb-d2aa5968c45f',
+  timestamp: 1751701170293
+}
+🔚 Sessão finalizada: 13e86b35-e5c1-4207-8595-ea81e1fcb74a
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: '13e86b35-e5c1-4207-8595-ea81e1fcb74a',
+  timestamp: 1751701170294
+}
+🔚 Sessão finalizada: d29a646e-1e37-4816-90ac-4f1e3ef2cf33
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: 'd29a646e-1e37-4816-90ac-4f1e3ef2cf33',
+  timestamp: 1751701170294
+}
+📈 Status: 2 clientes ativos, 2 sessões
+📋 Sessões ativas:
+   🔸 7ce640e8-f17c-463b-9984-a9dcaf46876f: 0 imagens, 897s, ativo
+   🔸 55837685-5480-4822-baf5-31b6d161e08c: 0 imagens, 135s, ativo
+🔚 Sessão finalizada: 32aa1113-631d-4c8c-af52-8d3294696ba6
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: '32aa1113-631d-4c8c-af52-8d3294696ba6',
+  timestamp: 1751701265084
+}
+🔚 Sessão finalizada: cfb40a29-8854-4a10-8fbb-d2aa5968c45f
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: 'cfb40a29-8854-4a10-8fbb-d2aa5968c45f',
+  timestamp: 1751701265084
+}
+🔚 Sessão finalizada: 13e86b35-e5c1-4207-8595-ea81e1fcb74a
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: '13e86b35-e5c1-4207-8595-ea81e1fcb74a',
+  timestamp: 1751701265085
+}
+🔚 Sessão finalizada: d29a646e-1e37-4816-90ac-4f1e3ef2cf33
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: 'd29a646e-1e37-4816-90ac-4f1e3ef2cf33',
+  timestamp: 1751701265085
+}
+📈 Status: 2 clientes ativos, 2 sessões
+📋 Sessões ativas:
+   🔸 7ce640e8-f17c-463b-9984-a9dcaf46876f: 0 imagens, 957s, ativo
+   🔸 55837685-5480-4822-baf5-31b6d161e08c: 0 imagens, 195s, ativo
+🔚 Sessão finalizada: 55837685-5480-4822-baf5-31b6d161e08c
+📊 Resumo da Sessão 55837685-5480-4822-baf5-31b6d161e08c:
+   ⏱️  Duração: 232s
+   📸 Imagens: 0
+   🖱️  Pontos de Mouse: 52
+   👆 Cliques: 0
+   🌐 URL: http://localhost:5000/
+⚠️  DIAGNÓSTICO - Sessão 55837685-5480-4822-baf5-31b6d161e08c sem imagens:
+   - Duração da sessão: 232s
+   - Última atividade: 05/07/2025, 04:38:51
+   - URL da sessão: http://localhost:5000/
+   - Possíveis causas:
+     • Flutter não está enviando imagens
+     • Problemas de conectividade WebSocket
+     • Sessão muito curta (< 10s)
+     • Problemas no processo de captura
+   - Arquivos encontrados: 3
+     📄 mouse_data_55837685-5480-4822-baf5-31b6d161e08c_1751701101742.json
+     📄 mouse_data_55837685-5480-4822-baf5-31b6d161e08c_1751701111742.json
+     📄 mouse_data_55837685-5480-4822-baf5-31b6d161e08c_1751701131986.json
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: '55837685-5480-4822-baf5-31b6d161e08c',
+  timestamp: 1751701323796
+}
+🔚 Sessão finalizada: cfb40a29-8854-4a10-8fbb-d2aa5968c45f
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: 'cfb40a29-8854-4a10-8fbb-d2aa5968c45f',
+  timestamp: 1751701324906
+}
+🔚 Sessão finalizada: 13e86b35-e5c1-4207-8595-ea81e1fcb74a
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: '13e86b35-e5c1-4207-8595-ea81e1fcb74a',
+  timestamp: 1751701324908
+}
+🔚 Sessão finalizada: d29a646e-1e37-4816-90ac-4f1e3ef2cf33
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: 'd29a646e-1e37-4816-90ac-4f1e3ef2cf33',
+  timestamp: 1751701324909
+}
+🔚 Sessão finalizada: 32aa1113-631d-4c8c-af52-8d3294696ba6
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: '32aa1113-631d-4c8c-af52-8d3294696ba6',
+  timestamp: 1751701324913
+}
+📈 Status: 1 clientes ativos, 1 sessões
+📋 Sessões ativas:
+   🔸 7ce640e8-f17c-463b-9984-a9dcaf46876f: 0 imagens, 1017s, ativo
+📈 Status: 1 clientes ativos, 1 sessões
+📋 Sessões ativas:
+   🔸 7ce640e8-f17c-463b-9984-a9dcaf46876f: 0 imagens, 1077s, ativo
+📈 Status: 1 clientes ativos, 1 sessões
+📋 Sessões ativas:
+   🔸 7ce640e8-f17c-463b-9984-a9dcaf46876f: 0 imagens, 1137s, ativo
+🧹 Executando limpeza de sessões inativas...
+📈 Status: 1 clientes ativos, 1 sessões
+📋 Sessões ativas:
+   🔸 7ce640e8-f17c-463b-9984-a9dcaf46876f: 0 imagens, 1197s, ativo
+📈 Status: 1 clientes ativos, 1 sessões
+📋 Sessões ativas:
+   🔸 7ce640e8-f17c-463b-9984-a9dcaf46876f: 0 imagens, 1257s, ativo
+🔚 Sessão finalizada: 7ce640e8-f17c-463b-9984-a9dcaf46876f
+📊 Resumo da Sessão 7ce640e8-f17c-463b-9984-a9dcaf46876f:
+   ⏱️  Duração: 1290s
+   📸 Imagens: 0
+   🖱️  Pontos de Mouse: 0
+   👆 Cliques: 0
+   🌐 URL: http://localhost:62174/
+⚠️  DIAGNÓSTICO - Sessão 7ce640e8-f17c-463b-9984-a9dcaf46876f sem imagens:
+   - Duração da sessão: 1290s
+   - Última atividade: 05/07/2025, 04:25:30
+   - URL da sessão: http://localhost:62174/
+   - Possíveis causas:
+     • Flutter não está enviando imagens
+     • Problemas de conectividade WebSocket
+     • Sessão muito curta (< 10s)
+     • Problemas no processo de captura
+   - Nenhum arquivo encontrado no diretório de uploads
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: '7ce640e8-f17c-463b-9984-a9dcaf46876f',
+  timestamp: 1751701620261
+}
+🔌 Conexão WebSocket fechada: 7ce640e8-f17c-463b-9984-a9dcaf46876f
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:321:13)
+    at WebSocket.emit (node:events:536:35)
+    at WebSocket.emitClose (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:272:10)
+    at Socket.socketOnClose (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1341:15)
+    at Socket.emit (node:events:524:28) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+🔚 Sessão finalizada: 32aa1113-631d-4c8c-af52-8d3294696ba6
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: '32aa1113-631d-4c8c-af52-8d3294696ba6',
+  timestamp: 1751701624200
+}
+🔌 Conexão WebSocket fechada: 32aa1113-631d-4c8c-af52-8d3294696ba6
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:321:13)
+    at WebSocket.emit (node:events:536:35)
+    at WebSocket.emitClose (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:272:10)
+    at Socket.socketOnClose (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1341:15)
+    at Socket.emit (node:events:524:28) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+🔚 Sessão finalizada: cfb40a29-8854-4a10-8fbb-d2aa5968c45f
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: 'cfb40a29-8854-4a10-8fbb-d2aa5968c45f',
+  timestamp: 1751701626651
+}
+🔚 Sessão finalizada: 13e86b35-e5c1-4207-8595-ea81e1fcb74a
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: '13e86b35-e5c1-4207-8595-ea81e1fcb74a',
+  timestamp: 1751701626652
+}
+🔚 Sessão finalizada: d29a646e-1e37-4816-90ac-4f1e3ef2cf33
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:182:25)
+    at WebSocket.emit (node:events:524:28)
+    at Receiver.receiverOnMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1220:20)
+    at Receiver.emit (node:events:524:28)
+    at Receiver.dataMessage (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/receiver.js:596:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+📡 Admin Event: session_ended {
+  sessionId: 'd29a646e-1e37-4816-90ac-4f1e3ef2cf33',
+  timestamp: 1751701626653
+}
+🔌 Conexão WebSocket fechada: cfb40a29-8854-4a10-8fbb-d2aa5968c45f
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:321:13)
+    at WebSocket.emit (node:events:536:35)
+    at WebSocket.emitClose (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:272:10)
+    at Socket.socketOnClose (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1341:15)
+    at Socket.emit (node:events:524:28) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+🔌 Conexão WebSocket fechada: d29a646e-1e37-4816-90ac-4f1e3ef2cf33
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:321:13)
+    at WebSocket.emit (node:events:536:35)
+    at WebSocket.emitClose (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:272:10)
+    at Socket.socketOnClose (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1341:15)
+    at Socket.emit (node:events:524:28) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
+🔌 Conexão WebSocket fechada: 13e86b35-e5c1-4207-8595-ea81e1fcb74a
+Erro ao enviar notificação: Error: Cannot find module 'axios'
+Require stack:
+- /Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at notifyMainServer (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:421:23)
+    at WebSocket.<anonymous> (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js:321:13)
+    at WebSocket.emit (node:events:536:35)
+    at WebSocket.emitClose (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:272:10)
+    at Socket.socketOnClose (/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/node_modules/ws/lib/websocket.js:1341:15)
+    at Socket.emit (node:events:524:28) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/nathan.oliveira/Documents/test/clarity/heatmap-server/websocket-server.js'
+  ]
+}
