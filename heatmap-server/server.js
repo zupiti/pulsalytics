@@ -23,7 +23,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Diretório para uploads
-const UPLOAD_DIR = path.join(__dirname, 'upload');
+const UPLOAD_DIR = path.join(__dirname, 'uploads');
 
 // Garantir que a pasta upload existe
 if (!fs.existsSync(UPLOAD_DIR)) {

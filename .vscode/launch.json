@@ -25,41 +25,41 @@
             "flutterMode": "release"
         },
         {
-            "name": "flutter_heatmap_tracker",
-            "cwd": "flutter_heatmap_tracker",
+            "name": "flutter_pulsalytics",
+            "cwd": "flutter_pulsalytics",
             "request": "launch",
             "type": "dart"
         },
         {
-            "name": "flutter_heatmap_tracker (profile mode)",
-            "cwd": "flutter_heatmap_tracker",
+            "name": "flutter_pulsalytics (profile mode)",
+            "cwd": "flutter_pulsalytics",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
-            "name": "flutter_heatmap_tracker (release mode)",
-            "cwd": "flutter_heatmap_tracker",
+            "name": "flutter_pulsalytics (release mode)",
+            "cwd": "flutter_pulsalytics",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"
         },
         {
             "name": "example",
-            "cwd": "flutter_heatmap_tracker/example",
+            "cwd": "flutter_pulsalytics/example",
             "request": "launch",
             "type": "dart"
         },
         {
             "name": "example (profile mode)",
-            "cwd": "flutter_heatmap_tracker/example",
+            "cwd": "flutter_pulsalytics/example",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
             "name": "example (release mode)",
-            "cwd": "flutter_heatmap_tracker/example",
+            "cwd": "flutter_pulsalytics/example",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"

@@ -1,3 +1,3 @@
 library flutter_pulsalytics;
 
-export 'src/heatmap_plugin.dart';
+export 'src/pulsalytics_plugin.dart';

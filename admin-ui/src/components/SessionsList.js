@@ -1,23 +1,23 @@
 import React, { memo, useCallback, useMemo } from 'react';
 import {
-  Box, Typography, Table, TableBody, TableCell, TableContainer, 
+  Box, Typography, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Chip, Avatar, IconButton, Paper, Badge
 } from '@mui/material';
 import {
-  Timeline, Visibility, SignalWifiOff, Schedule, TouchApp, 
+  Timeline, Visibility, SignalWifiOff, Schedule, TouchApp,
   VideoLibrary, Delete, Warning
 } from '@mui/icons-material';
 
 // Componente de Lista de Sessões com Estatísticas
-export const SessionsList = memo(function SessionsList({ 
-  stats, 
-  groups, 
-  selectedSession, 
-  onSelectSession, 
-  onCreateVideo, 
-  onDeleteSession, 
-  disconnectedSessions, 
-  sessionStatus 
+export const SessionsList = memo(function SessionsList({
+  stats,
+  groups,
+  selectedSession,
+  onSelectSession,
+  onCreateVideo,
+  onDeleteSession,
+  disconnectedSessions,
+  sessionStatus
 }) {
   const formatDuration = useCallback((ms) => {
     if (ms < 60000) return `${Math.round(ms / 1000)}s`;
@@ -78,9 +78,14 @@ export const SessionsList = memo(function SessionsList({
     return `${icon} ${displayName}`;
   }, []);
 
+  const TIMEOUT_THRESHOLD = 20 * 1000; // 20 segundos
+
   const getSessionStatus = useCallback((sessionId, detail) => {
     const isDisconnected = disconnectedSessions.has(sessionId);
     const serverStatus = sessionStatus[sessionId]?.status;
+    const now = Date.now();
+    const lastImageTime = detail.lastImageTime?.getTime ? detail.lastImageTime.getTime() : detail.lastImageTime;
+    const isTimedOut = lastImageTime ? (now - lastImageTime > TIMEOUT_THRESHOLD) : true;
 
     if (isDisconnected || serverStatus === 'disconnected') {
       return {
@@ -89,12 +94,19 @@ export const SessionsList = memo(function SessionsList({
         icon: <SignalWifiOff fontSize="small" />,
         description: 'Usuário desconectado'
       };
-    } else if (detail.isActive) {
+    } else if (!isTimedOut && detail.isActive) {
       return {
         label: 'Online',
         color: 'success',
         icon: <Visibility fontSize="small" />,
         description: 'Usuário ativo agora'
+      };
+    } else if (isTimedOut) {
+      return {
+        label: 'Inativo',
+        color: 'warning',
+        icon: <Schedule fontSize="small" />,
+        description: 'Sem atividade há mais de 20 segundos'
       };
     } else {
       return {
@@ -112,7 +124,7 @@ export const SessionsList = memo(function SessionsList({
       .filter(detail => detail.isActive && !disconnectedSessions.has(detail.sessionId)).length;
     const offlineCount = disconnectedSessions.size;
     const inactiveCount = Object.keys(stats.sessionDetails || {}).length - onlineCount - offlineCount;
-    
+
     return { onlineCount, offlineCount, inactiveCount };
   }, [stats.sessionDetails, disconnectedSessions]);
 

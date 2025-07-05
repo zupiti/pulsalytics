@@ -1,6 +1,6 @@
-import 'dart:html';
+import 'package:universal_html/html.dart';
 
-class HeatmapPlugin {
+class PulsalyticsPlugin {
   static String? _serverUrl;
   static double? _imageQuality;
   static String? _userId;
@@ -23,7 +23,7 @@ class HeatmapPlugin {
       'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
       onLoad: () {
         _injectHeatmapConfig();
-        _injectScript('packages/flutter_pulsalytics_tracker/web/heatmap.js');
+        _injectScript('packages/flutter_pulsalytics/web/pulsalytics.js');
       },
     );
   }
@@ -33,13 +33,11 @@ class HeatmapPlugin {
     final configScript = ScriptElement()
       ..type = 'application/javascript'
       ..text = '''
-        // Configurações do Heatmap Tracker Plugin
         window.HEATMAP_CONFIG = {
           serverUrl: "${_serverUrl ?? 'http://localhost:3001'}",
           imageQuality: ${_imageQuality ?? 0.8},
           userId: ${_userId != null ? '"$_userId"' : 'null'}
         };
-        console.log('Heatmap Config injected:', window.HEATMAP_CONFIG);
       ''';
 
     document.head!.append(configScript);
