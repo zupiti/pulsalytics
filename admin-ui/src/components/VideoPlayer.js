@@ -118,10 +118,24 @@ export const VideoPlayer = memo(function VideoPlayer({
 
   // Função para criar mapa de calor baseado nos dados do JSON ou mouse data
   const createHeatmapData = useCallback(() => {
-    const { positions } = getCurrentImageData();
-    let allPositions = positions;
+    // Coletar TODOS os pontos de TODAS as imagens da sessão
+    let allPositions = [];
 
-    // Fallback para dados da API se não houver dados na imagem
+    if (images && images.length > 0) {
+      images.forEach(image => {
+        // Adicionar posições diretas da imagem
+        if (image.positions && image.positions.length > 0) {
+          allPositions.push(...image.positions);
+        }
+
+        // Adicionar posições do metadata
+        if (image.metadata && image.metadata.positions && image.metadata.positions.length > 0) {
+          allPositions.push(...image.metadata.positions);
+        }
+      });
+    }
+
+    // Fallback para dados da API se não houver dados nas imagens
     if (allPositions.length === 0 && mouseData.length > 0) {
       allPositions = mouseData;
     }
@@ -131,7 +145,7 @@ export const VideoPlayer = memo(function VideoPlayer({
       return [];
     }
 
-    console.log('Criando heatmap com', allPositions.length, 'posições');
+    console.log('Criando heatmap com', allPositions.length, 'posições de todas as imagens da sessão');
 
     // Agrupar pontos próximos para criar zonas de calor
     const heatmapPoints = [];
@@ -166,9 +180,9 @@ export const VideoPlayer = memo(function VideoPlayer({
       }
     });
 
-    console.log('Heatmap criado com', heatmapPoints.length, 'zonas');
+    console.log('Heatmap criado com', heatmapPoints.length, 'zonas de todas as imagens');
     return heatmapPoints;
-  }, [getCurrentImageData, mouseData]);
+  }, [images, mouseData]);
 
   // Função para desenhar o mapa de calor no canvas (igual ao appp.js)
   const drawHeatmap = useCallback(() => {
@@ -214,12 +228,10 @@ export const VideoPlayer = memo(function VideoPlayer({
 
     if (finalPositions.length === 0 && mouseData.length > 0) {
       finalPositions = mouseData;
-      console.log('Usando mouseData da API:', finalPositions);
     }
 
     if (finalClickPoints.length === 0 && clickData.length > 0) {
       finalClickPoints = clickData;
-      console.log('Usando clickData da API:', finalClickPoints);
     }
 
     console.log('Dados finais para desenho:', {

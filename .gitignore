@@ -21,4 +21,5 @@ Thumbs.db
 
 # Ignorar uploads do servidor
 heatmap-server/uploads/**
-flutter_heatmap_tracker/example/** */
+flutter_heatmap_tracker/example/**
+flutter_heatmap_tracker/example/.dart_tool/**
