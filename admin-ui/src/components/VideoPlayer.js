@@ -35,6 +35,7 @@ export const VideoPlayer = memo(function VideoPlayer({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [lastDataUpdate, setLastDataUpdate] = useState(0);
+  const [sessionTrackingData, setSessionTrackingData] = useState(null);
 
   const stats = useMemo(() => ({
     totalFrames: images.length,
@@ -51,7 +52,19 @@ export const VideoPlayer = memo(function VideoPlayer({
   // Obter informações da sessão atual
   const sessionDetail = sessionStats.sessionDetails?.[sessionId];
   const isDisconnected = disconnectedSessions.has(sessionId);
-  const isOnline = sessionDetail?.isActive && !isDisconnected;
+
+  // Verificar se última imagem faz mais que 20 segundos
+  const isTimedOut = useMemo(() => {
+    if (!images || images.length === 0) return false;
+
+    const lastImage = images[images.length - 1];
+    const now = Date.now();
+    const timeSinceLastImage = now - lastImage.timestamp;
+
+    return timeSinceLastImage > 20000; // 20 segundos
+  }, [images]);
+
+  const isOnline = sessionDetail?.isActive && !isDisconnected && !isTimedOut;
 
   // URL base da API
   const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001';
@@ -69,7 +82,39 @@ export const VideoPlayer = memo(function VideoPlayer({
     return `${apiUrl}${image.url}`;
   }, [apiUrl]);
 
-  // Função para buscar dados de mouse e cliques
+  // Função para buscar arquivo JSON correspondente à imagem
+  const fetchImageTrackingData = useCallback(async (imagePath) => {
+    if (!imagePath) return null;
+
+    try {
+      // Extrair nome do arquivo e substituir extensão por .json
+      const fileName = imagePath.split('/').pop();
+      const baseName = fileName.split('.')[0];
+      const jsonPath = `/uploads/${baseName}.json`;
+
+      const response = await fetch(`${apiUrl}${jsonPath}`);
+      if (response.ok) {
+        const data = await response.json();
+        return data;
+      }
+    } catch (error) {
+      console.error('Erro ao buscar dados de tracking:', error);
+    }
+
+    return null;
+  }, [apiUrl]);
+
+  // Buscar dados de tracking da imagem atual
+  useEffect(() => {
+    if (images && images[currentIndex]) {
+      const currentImage = images[currentIndex];
+      fetchImageTrackingData(currentImage.url).then(data => {
+        setSessionTrackingData(data);
+      });
+    }
+  }, [currentIndex, images, fetchImageTrackingData]);
+
+  // Função para buscar dados de mouse e cliques (mantida para compatibilidade)
   const fetchMouseData = useCallback(async () => {
     if (!sessionId) return;
 
@@ -109,15 +154,24 @@ export const VideoPlayer = memo(function VideoPlayer({
     return () => clearInterval(interval);
   }, [sessionId, fetchMouseData]);
 
-  // Função para criar mapa de calor baseado nos dados de mouse
+  // Função para criar mapa de calor baseado nos dados do JSON ou mouse data
   const createHeatmapData = useCallback(() => {
-    if (!mouseData.length) return [];
+    let positions = [];
+
+    // Usar dados do JSON se disponível, senão usar mouseData
+    if (sessionTrackingData?.positions) {
+      positions = sessionTrackingData.positions;
+    } else if (mouseData.length > 0) {
+      positions = mouseData;
+    }
+
+    if (!positions.length) return [];
 
     // Agrupar pontos próximos para criar zonas de calor
     const heatmapPoints = [];
     const threshold = 30; // Distância para agrupar pontos
 
-    mouseData.forEach(point => {
+    positions.forEach(point => {
       let merged = false;
 
       for (let i = 0; i < heatmapPoints.length; i++) {
@@ -147,9 +201,9 @@ export const VideoPlayer = memo(function VideoPlayer({
     });
 
     return heatmapPoints;
-  }, [mouseData]);
+  }, [sessionTrackingData, mouseData]);
 
-  // Função para desenhar o mapa de calor no canvas
+  // Função para desenhar o mapa de calor no canvas (igual ao appp.js)
   const drawHeatmap = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas || !imageLoaded) return;
@@ -170,97 +224,98 @@ export const VideoPlayer = memo(function VideoPlayer({
       const scaleX = imgRect.width / img.naturalWidth;
       const scaleY = imgRect.height / img.naturalHeight;
 
+      // Obter dados de posições e cliques
+      let positions = [];
+      let clickPoints = [];
+
+      if (sessionTrackingData) {
+        positions = sessionTrackingData.positions || [];
+        clickPoints = sessionTrackingData.clickPoints || [];
+      } else {
+        positions = mouseData;
+        clickPoints = clickData;
+      }
+
       // Desenhar mapa de calor
-      if (showHeatmap) {
+      if (showHeatmap && positions.length > 0) {
+        ctx.globalCompositeOperation = 'multiply';
+
         const heatmapPoints = createHeatmapData();
 
         heatmapPoints.forEach(point => {
           const x = point.x * scaleX;
           const y = point.y * scaleY;
-          const intensity = Math.min(point.intensity / 10, 1); // Normalizar intensidade
+          const intensity = Math.min(point.intensity / 10, 1);
           const radius = Math.max(20, point.intensity * 3) * (heatmapIntensity / 50);
 
           // Criar gradiente radial para o ponto de calor
           const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
-          gradient.addColorStop(0, `rgba(255, 0, 0, ${0.6 * intensity})`);
-          gradient.addColorStop(0.3, `rgba(255, 165, 0, ${0.4 * intensity})`);
-          gradient.addColorStop(0.6, `rgba(255, 255, 0, ${0.2 * intensity})`);
-          gradient.addColorStop(1, 'rgba(255, 255, 0, 0)');
+          gradient.addColorStop(0, `rgba(255, 0, 0, ${0.1 * intensity})`);
+          gradient.addColorStop(0.5, `rgba(255, 255, 0, ${0.05 * intensity})`);
+          gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
 
           ctx.beginPath();
           ctx.arc(x, y, radius, 0, 2 * Math.PI);
           ctx.fillStyle = gradient;
           ctx.fill();
         });
+
+        ctx.globalCompositeOperation = 'source-over';
       }
 
-      // Desenhar trilha do mouse
-      if (showTrail && mouseData.length > 1) {
-        ctx.strokeStyle = 'rgba(255, 0, 0, 0.7)';
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
+      // Desenhar trilha do mouse (igual ao appp.js)
+      if (showTrail && positions.length > 0) {
+        const now = Date.now();
+        positions.forEach(point => {
+          const age = now - point.timestamp;
+          if (age < 2000) { // Apenas pontos dos últimos 2 segundos
+            const opacity = Math.max(0, 1 - (age / 2000));
+            const x = point.x * scaleX;
+            const y = point.y * scaleY;
 
-        ctx.beginPath();
-        mouseData.forEach((point, index) => {
-          const x = point.x * scaleX;
-          const y = point.y * scaleY;
-
-          if (index === 0) {
-            ctx.moveTo(x, y);
-          } else {
-            ctx.lineTo(x, y);
+            ctx.fillStyle = `rgba(255, 0, 0, ${opacity * 0.4})`;
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, 2 * Math.PI);
+            ctx.fill();
           }
         });
-        ctx.stroke();
-
-        // Desenhar pontos da trilha
-        mouseData.forEach(point => {
-          const x = point.x * scaleX;
-          const y = point.y * scaleY;
-
-          ctx.beginPath();
-          ctx.arc(x, y, 2, 0, 2 * Math.PI);
-          ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
-          ctx.fill();
-        });
       }
 
-      // Desenhar cliques
-      if (showClicks) {
-        clickData.forEach(click => {
-          const x = click.x * scaleX;
-          const y = click.y * scaleY;
+      // Desenhar cliques (igual ao appp.js)
+      if (showClicks && clickPoints.length > 0) {
+        const now = Date.now();
+        clickPoints.forEach(click => {
+          const age = now - click.timestamp;
+          if (age < 5000) { // Apenas cliques dos últimos 5 segundos
+            const opacity = Math.max(0, 1 - (age / 5000));
+            const scale = 1 + (age / 5000) * 1.5;
+            const x = click.x * scaleX;
+            const y = click.y * scaleY;
 
-          // Círculo externo (azul)
-          ctx.beginPath();
-          ctx.arc(x, y, 15, 0, 2 * Math.PI);
-          ctx.strokeStyle = 'rgba(0, 100, 255, 0.8)';
-          ctx.lineWidth = 3;
-          ctx.stroke();
+            // Círculo azul para clique
+            ctx.fillStyle = `rgba(0, 100, 255, ${opacity * 0.6})`;
+            ctx.beginPath();
+            ctx.arc(x, y, 10 * scale, 0, 2 * Math.PI);
+            ctx.fill();
 
-          // Círculo interno (preenchido)
-          ctx.beginPath();
-          ctx.arc(x, y, 8, 0, 2 * Math.PI);
-          ctx.fillStyle = 'rgba(0, 100, 255, 0.4)';
-          ctx.fill();
-
-          // Ponto central
-          ctx.beginPath();
-          ctx.arc(x, y, 3, 0, 2 * Math.PI);
-          ctx.fillStyle = 'rgba(0, 100, 255, 1)';
-          ctx.fill();
+            // Borda do clique
+            ctx.strokeStyle = `rgba(0, 100, 255, ${opacity * 0.9})`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(x, y, 10 * scale, 0, 2 * Math.PI);
+            ctx.stroke();
+          }
         });
       }
     }
-  }, [mouseData, clickData, showHeatmap, showTrail, showClicks, heatmapIntensity, imageLoaded, createHeatmapData]);
+  }, [sessionTrackingData, mouseData, clickData, showHeatmap, showTrail, showClicks, heatmapIntensity, imageLoaded, createHeatmapData]);
 
   // Redesenhar quando os dados ou configurações mudarem
   useEffect(() => {
     drawHeatmap();
   }, [drawHeatmap]);
 
-  // Status da sessão
+  // Status da sessão com lógica de timeout
   const getSessionStatus = useCallback(() => {
     if (isDisconnected) {
       return {
@@ -268,6 +323,13 @@ export const VideoPlayer = memo(function VideoPlayer({
         color: 'error',
         icon: <SignalWifiOff />,
         description: 'Usuário desconectado'
+      };
+    } else if (isTimedOut) {
+      return {
+        label: 'Timeout (20s)',
+        color: 'warning',
+        icon: <Schedule />,
+        description: 'Última imagem há mais de 20 segundos'
       };
     } else if (isOnline) {
       return {
@@ -278,13 +340,13 @@ export const VideoPlayer = memo(function VideoPlayer({
       };
     } else {
       return {
-        label: 'Timeout (20s)',
+        label: 'Inativo',
         color: 'warning',
         icon: <Schedule />,
-        description: 'Sem atividade há mais de 20 segundos'
+        description: 'Sessão inativa'
       };
     }
-  }, [isDisconnected, isOnline]);
+  }, [isDisconnected, isTimedOut, isOnline]);
 
   const sessionStatusInfo = getSessionStatus();
 
@@ -698,9 +760,9 @@ export const VideoPlayer = memo(function VideoPlayer({
                       fontWeight: 600
                     }}>
                       🎯 Interações
-                      {lastDataUpdate > 0 && (
+                      {(sessionTrackingData || lastDataUpdate > 0) && (
                         <Chip
-                          label="Atualizado"
+                          label="Dados JSON"
                           size="small"
                           color="success"
                           variant="outlined"
@@ -711,7 +773,7 @@ export const VideoPlayer = memo(function VideoPlayer({
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                       <Chip
                         icon={<Mouse />}
-                        label={`${mouseData.length} Movimentos`}
+                        label={`${sessionTrackingData?.positions?.length || mouseData.length} Movimentos`}
                         color="primary"
                         variant="outlined"
                         sx={{
@@ -722,7 +784,7 @@ export const VideoPlayer = memo(function VideoPlayer({
                       />
                       <Chip
                         icon={<TouchApp />}
-                        label={`${clickData.length} Cliques`}
+                        label={`${sessionTrackingData?.clickPoints?.length || clickData.length} Cliques`}
                         color="secondary"
                         variant="outlined"
                         sx={{
@@ -742,6 +804,19 @@ export const VideoPlayer = memo(function VideoPlayer({
                           '& .MuiChip-label': { fontWeight: 500 }
                         }}
                       />
+                      {sessionTrackingData && (
+                        <Chip
+                          icon={<Schedule />}
+                          label={`${new Date(sessionTrackingData.timestamp).toLocaleTimeString()}`}
+                          color="info"
+                          variant="outlined"
+                          sx={{
+                            justifyContent: 'flex-start',
+                            py: 2,
+                            '& .MuiChip-label': { fontWeight: 500 }
+                          }}
+                        />
+                      )}
                     </Box>
                   </CardContent>
                 </Card>
