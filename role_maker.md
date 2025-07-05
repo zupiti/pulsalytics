@@ -1,6 +1,6 @@
 siga as diretrizes de rules.md
 
-no script do javascript no clarity tem como  remover a exibicao dessas requisicoes? para usuario nao ver isso
+no script do javascript no pulsalytics tem como  remover a exibicao dessas requisicoes? para usuario nao ver isso
 
 cd heatmap-server
 npm start
