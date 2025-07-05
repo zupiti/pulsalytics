@@ -1,0 +1,76 @@
+Launching lib/main.dart on Chrome in debug mode...
+Waiting for connection from debug service on Chrome...              7,0s
+This app is linked to the debug service: ws://127.0.0.1:64470/t5vY7btgq3U=/ws
+Debug service listening on ws://127.0.0.1:64470/t5vY7btgq3U=/ws
+
+Flutter run key commands.
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
+
+A Dart VM Service on Chrome is available at: http://127.0.0.1:64470/t5vY7btgq3U=
+Heatmap Config injected:
+The Flutter DevTools debugger and profiler on Chrome is available at: http://127.0.0.1:9100?uri=http://127.0.0.1:64470/t5vY7btgq3U=
+🚀 Heatmap Tracker iniciado
+🚀 Inicializando Heatmap Tracker...
+✅ WebSocket conectado
+🎯 Sessão iniciada: c3aeec4d-5c93-4751-9dfb-0f4a7eda0b46
+🟢 Captura iniciada
+⚙️ Configuração atualizada:
+📱 Página oculta - pausando captura
+🔴 Captura interrompida
+📱 Página visível - retomando captura
+🟢 Captura iniciada
+📸 Screenshot enviado: 28.95 KB
+📸 Screenshot enviado: 28.95 KB
+🖱️ Clique capturado: (935, 707)
+🖱️ Enviando 1 cliques
+🖱️ Clique capturado: (208, 687)
+🖱️ Enviando 2 cliques
+🖱️ Clique capturado: (216, 665)
+🖱️ Enviando 3 cliques
+🖱️ Clique capturado: (290, 663)
+🖱️ Enviando 4 cliques
+📤 Enviando 234 pontos de mouse acumulados
+🔴 Captura interrompida
+🔌 WebSocket desconectado
+📱 Página oculta - pausando captura
+Heatmap Config injected:
+🚀 Heatmap Tracker iniciado
+🚀 Inicializando Heatmap Tracker...
+✅ WebSocket conectado
+🎯 Sessão iniciada: 32aa1113-631d-4c8c-af52-8d3294696ba6
+🟢 Captura iniciada
+⚙️ Configuração atualizada:
+📸 Screenshot enviado: 27.95 KB
+📤 Enviando 128 pontos de mouse acumulados
+📸 Screenshot enviado: 27.95 KB
+📸 Screenshot enviado: 27.95 KB
+📸 Screenshot enviado: 27.95 KB
+📸 Screenshot enviado: 27.95 KB
+📸 Screenshot enviado: 27.95 KB
+📸 Screenshot enviado: 27.95 KB
+📸 Screenshot enviado: 27.95 KB
+🖱️ Clique capturado: (469, 740)
+🖱️ Enviando 1 cliques
+🖱️ Clique capturado: (439, 686)
+🖱️ Enviando 2 cliques
+🖱️ Clique capturado: (316, 663)
+🖱️ Enviando 3 cliques
+🖱️ Clique capturado: (178, 645)
+🖱️ Enviando 4 cliques
+🖱️ Clique capturado: (106, 658)
+🖱️ Enviando 5 cliques
+🖱️ Clique capturado: (435, 656)
+🖱️ Enviando 6 cliques
+📤 Enviando 324 pontos de mouse acumulados
+📸 Screenshot enviado: 27.88 KB
+📸 Screenshot enviado: 28.90 KB
+📸 Screenshot enviado: 27.88 KB
+📸 Screenshot enviado: 27.88 KB
+📸 Screenshot enviado: 27.88 KB
+📸 Screenshot enviado: 27.88 KB
+📸 Screenshot enviado: 27.88 KB
+📸 Screenshot enviado: 27.88 KB

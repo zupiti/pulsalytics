@@ -1,18 +1,18 @@
 import React, { memo, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  Drawer, List, ListItem, ListItemButton, ListItemText, Toolbar, 
+  Drawer, List, ListItem, ListItemButton, ListItemText, Toolbar,
   Typography, Divider, Box
 } from '@mui/material';
-import { Analytics, Timeline, VideoLibrary } from '@mui/icons-material';
+import { Analytics, Timeline } from '@mui/icons-material';
 
 const drawerWidth = 280;
 
-export const Sidebar = memo(function Sidebar({ 
-  sortedSessionIds, 
-  groups, 
-  sessionStats, 
-  disconnectedSessions 
+export const Sidebar = memo(function Sidebar({
+  sortedSessionIds,
+  groups,
+  sessionStats,
+  disconnectedSessions
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -34,9 +34,8 @@ export const Sidebar = memo(function Sidebar({
         navigate('/sessions');
         break;
       case 2:
-        // Se não há sessão selecionada, vai para sessions
         if (sortedSessionIds.length > 0) {
-          navigate(`/player/${sortedSessionIds[0]}`);
+          navigate(`/online-session/${sortedSessionIds[0]}`);
         } else {
           navigate('/sessions');
         }
@@ -47,7 +46,7 @@ export const Sidebar = memo(function Sidebar({
   }, [navigate, sortedSessionIds]);
 
   const handleSessionClick = useCallback((sessionId) => {
-    navigate(`/player/${sessionId}`);
+    navigate(`/online-session/${sessionId}`);
   }, [navigate]);
 
   // Memoizar conteúdo da navegação
@@ -77,16 +76,7 @@ export const Sidebar = memo(function Sidebar({
             <ListItemText primary="Sessões" />
           </ListItemButton>
         </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton
-            selected={activeTab === 2}
-            onClick={() => handleTabChange(2)}
-            sx={{ borderRadius: 1, mx: 1, my: 0.5 }}
-          >
-            <VideoLibrary sx={{ mr: 1, color: activeTab === 2 ? '#90caf9' : '#bbb' }} />
-            <ListItemText primary="Player" />
-          </ListItemButton>
-        </ListItem>
+
       </List>
 
       <Divider sx={{ bgcolor: '#444', my: 2 }} />
@@ -99,8 +89,8 @@ export const Sidebar = memo(function Sidebar({
 
   // Memoizar lista de sessões
   const sessionList = useMemo(() => (
-    <List sx={{ 
-      maxHeight: 'calc(100vh - 400px)', 
+    <List sx={{
+      maxHeight: 'calc(100vh - 400px)',
       overflow: 'auto',
       '&::-webkit-scrollbar': {
         width: '6px',
@@ -126,13 +116,13 @@ export const Sidebar = memo(function Sidebar({
         const isDisconnected = disconnectedSessions.has(sessionId);
         const isOnline = sessionDetail?.isActive && !isDisconnected;
         const isSelected = location.pathname === `/player/${sessionId}`;
-        
+
         // Verificar se deve mostrar separador
         const prevSessionId = index > 0 ? sortedSessionIds[index - 1] : null;
         const prevSessionDetail = prevSessionId ? sessionStats.sessionDetails?.[prevSessionId] : null;
         const prevIsDisconnected = prevSessionId ? disconnectedSessions.has(prevSessionId) : false;
         const prevIsOnline = prevSessionDetail?.isActive && !prevIsDisconnected;
-        
+
         const showSeparator = index > 0 && (
           (prevIsOnline && !isOnline && !isDisconnected) || // Online para Inativo
           (!prevIsDisconnected && isDisconnected) // Qualquer para Desconectado
@@ -142,15 +132,15 @@ export const Sidebar = memo(function Sidebar({
           <React.Fragment key={sessionId}>
             {showSeparator && (
               <ListItem sx={{ py: 0.5 }}>
-                <Divider sx={{ 
-                  width: '100%', 
+                <Divider sx={{
+                  width: '100%',
                   bgcolor: '#444',
                   '&::before, &::after': {
                     borderColor: '#444',
                   }
                 }} textAlign="center">
-                  <Typography variant="caption" sx={{ 
-                    color: '#666', 
+                  <Typography variant="caption" sx={{
+                    color: '#666',
                     fontSize: '0.7rem',
                     px: 1,
                     textTransform: 'uppercase'
@@ -208,11 +198,11 @@ export const Sidebar = memo(function Sidebar({
       sx={{
         width: drawerWidth,
         flexShrink: 0,
-        [`& .MuiDrawer-paper`]: { 
-          width: drawerWidth, 
-          boxSizing: 'border-box', 
-          bgcolor: '#23272f', 
-          color: '#fff' 
+        [`& .MuiDrawer-paper`]: {
+          width: drawerWidth,
+          boxSizing: 'border-box',
+          bgcolor: '#23272f',
+          color: '#fff'
         },
       }}
     >

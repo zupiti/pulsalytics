@@ -1026,16 +1026,7 @@ function App() {
             <ListItemText primary="Sessões" />
           </ListItemButton>
         </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton
-            selected={currentTab === 2}
-            onClick={() => handleTabChange(2)}
-            sx={{ borderRadius: 1, mx: 1, my: 0.5 }}
-          >
-            <VideoLibrary sx={{ mr: 1, color: currentTab === 2 ? '#90caf9' : '#bbb' }} />
-            <ListItemText primary="Player" />
-          </ListItemButton>
-        </ListItem>
+    
       </List>
 
       <Divider sx={{ bgcolor: '#444', my: 2 }} />
@@ -1224,16 +1215,7 @@ function App() {
                 <ListItemText primary="Sessões" />
               </ListItemButton>
             </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton
-                selected={currentTab === 2}
-                onClick={() => handleTabChange(2)}
-                sx={{ borderRadius: 1, mx: 1, my: 0.5 }}
-              >
-                <VideoLibrary sx={{ mr: 1, color: currentTab === 2 ? '#90caf9' : '#bbb' }} />
-                <ListItemText primary="Player" />
-              </ListItemButton>
-            </ListItem>
+        
           </List>
 
           <Divider sx={{ bgcolor: '#444', my: 2 }} />

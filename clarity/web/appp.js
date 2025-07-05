@@ -1,10 +1,35 @@
 const config = window.HEATMAP_CONFIG || {
-    serverUrl: 'ws://localhost:3001',
-    imageQuality: 0.1,
+    serverUrl: 'ws://localhost:3002',
+    imageQuality: 0.8,
     userId: null,
     batchSize: 20,
     maxBufferSize: 100,
-    throttleMs: 16 // ~60fps
+    throttleMs: 16, // ~60fps
+    mouseDataInterval: 10000,
+    // Novas configurações de segurança
+    blurSensitiveText: true,
+    blurIntensity: 8,
+    sensitiveSelectors: [
+        'input[type="password"]',
+        'input[type="email"]',
+        'input[type="tel"]',
+        'input[name*="phone"]',
+        'input[name*="email"]',
+        'input[name*="cpf"]',
+        'input[name*="cnpj"]',
+        'input[name*="card"]',
+        'input[name*="credit"]',
+        'input[name*="bank"]',
+        'input[name*="account"]',
+        '.sensitive-text',
+        '.blur-content',
+        '[data-sensitive]',
+        'input[data-blur]',
+        'textarea[data-blur]',
+        '.credit-card',
+        '.bank-info',
+        '.personal-info'
+    ]
 };
 
 // Performance optimizations
@@ -12,7 +37,10 @@ const RAF = window.requestAnimationFrame || window.webkitRequestAnimationFrame |
 const CANCEL_RAF = window.cancelAnimationFrame || window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame;
 
 class PerformantHeatmapTracker {
-    constructor() {
+    constructor(customConfig = {}) {
+        // Merge custom config with defaults
+        this.config = { ...config, ...customConfig };
+
         this.heatmapData = new Map();
         this.currentUrl = window.location.href;
         this.lastCapturedUrl = this.currentUrl;
@@ -22,6 +50,7 @@ class PerformantHeatmapTracker {
         this.mouseBuffer = [];
         this.clickBuffer = [];
         this.trailPoints = [];
+        this.accumulatedMouseData = [];
 
         // Performance tracking
         this.lastMousePosition = null;
@@ -42,10 +71,14 @@ class PerformantHeatmapTracker {
         this.captureTimer = null;
         this.cleanupTimer = null;
         this.bufferFlushTimer = null;
+        this.mouseDataTimer = null;
 
         // Canvas optimization
         this.canvasPool = [];
         this.maxCanvasPool = 3;
+
+        // Blur elements cache
+        this.blurElementsCache = new WeakMap();
 
         this.init();
     }
@@ -57,12 +90,13 @@ class PerformantHeatmapTracker {
         this.startCapture();
         this.startCleanup();
         this.setupVisibilityHandlers();
+        this.startMouseDataTimer();
     }
 
     // WebSocket Management
     connectWebSocket() {
         try {
-            this.ws = new WebSocket(config.serverUrl);
+            this.ws = new WebSocket(this.config.serverUrl);
 
             this.ws.onopen = () => {
                 console.log('WebSocket connected');
@@ -144,15 +178,20 @@ class PerformantHeatmapTracker {
     getSessionId() {
         let sessionId = sessionStorage.getItem('heatmapSessionId');
         if (!sessionId) {
-            const userPrefix = config.userId ? `user_${config.userId}` : this.createSafeFilename(window.location.origin + window.location.pathname);
-            sessionId = `${userPrefix}_${this.generateId()}_${Date.now()}_${this.generateId(4)}`;
+            // Gera um UUID v4 para a sessão
+            sessionId = this.generateUUIDv4();
             sessionStorage.setItem('heatmapSessionId', sessionId);
         }
         return sessionId;
     }
 
-    generateId(length = 6) {
-        return Math.random().toString(36).substr(2, length);
+    // Função para gerar UUID v4
+    generateUUIDv4() {
+        // https://stackoverflow.com/a/2117523/2715716
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
     }
 
     createSafeFilename(url) {
@@ -163,12 +202,16 @@ class PerformantHeatmapTracker {
         this.sendWebSocketMessage({
             type: 'session_start',
             sessionId: this.sessionId,
-            userId: config.userId,
+            userId: this.config.userId,
             url: this.currentUrl,
             timestamp: Date.now(),
             viewport: {
                 width: window.innerWidth,
                 height: window.innerHeight
+            },
+            config: {
+                imageQuality: this.config.imageQuality,
+                blurSensitiveText: this.config.blurSensitiveText
             }
         });
     }
@@ -197,7 +240,7 @@ class PerformantHeatmapTracker {
     // Optimized Mouse Tracking
     setupEventListeners() {
         // Throttled mouse tracking
-        document.addEventListener('mousemove', this.throttle(this.handleMouseMove.bind(this), config.throttleMs));
+        document.addEventListener('mousemove', this.throttle(this.handleMouseMove.bind(this), this.config.throttleMs));
         document.addEventListener('click', this.handleClick.bind(this));
         document.addEventListener('mouseleave', () => { this.isMouseInFocus = false; });
         document.addEventListener('mouseenter', () => { this.isMouseInFocus = true; });
@@ -230,7 +273,7 @@ class PerformantHeatmapTracker {
             x: e.clientX,
             y: e.clientY,
             timestamp: now,
-            id: this.generateId()
+            id: this.generateUUIDv4()
         });
 
         // Keep trail size optimal
@@ -238,24 +281,28 @@ class PerformantHeatmapTracker {
             this.trailPoints = this.trailPoints.slice(-15);
         }
 
-        // Buffer mouse data
+        // Acumular dados de mouse localmente (não enviar imediatamente)
+        this.accumulatedMouseData.push({
+            x: e.clientX,
+            y: e.clientY,
+            timestamp: now
+        });
+
+        // Manter tamanho do buffer otimizado
+        if (this.accumulatedMouseData.length > this.config.maxBufferSize) {
+            this.accumulatedMouseData = this.accumulatedMouseData.slice(-Math.floor(this.config.maxBufferSize * 0.75));
+        }
+
+        // Buffer mouse data for heatmap processing
         this.mouseBuffer.push({
             x: e.clientX,
             y: e.clientY,
             timestamp: now
         });
 
-        // Auto-flush when buffer is full
-        if (this.mouseBuffer.length >= config.batchSize) {
-            this.flushMouseBuffer();
-        }
-
-        // Schedule flush if not already scheduled
-        if (!this.bufferFlushTimer) {
-            this.bufferFlushTimer = setTimeout(() => {
-                this.flushMouseBuffer();
-                this.bufferFlushTimer = null;
-            }, 100);
+        // Keep buffer size optimal for heatmap
+        if (this.mouseBuffer.length > this.config.batchSize) {
+            this.mouseBuffer = this.mouseBuffer.slice(-this.config.batchSize);
         }
 
         // Check URL change
@@ -269,7 +316,7 @@ class PerformantHeatmapTracker {
             x: e.clientX,
             y: e.clientY,
             timestamp: now,
-            id: this.generateId()
+            id: this.generateUUIDv4()
         });
 
         // Keep click buffer size optimal
@@ -306,21 +353,13 @@ class PerformantHeatmapTracker {
         data.positions.push(...this.mouseBuffer);
 
         // Optimize memory usage
-        if (data.positions.length > config.maxBufferSize) {
-            data.positions = data.positions.slice(-Math.floor(config.maxBufferSize * 0.75));
+        if (data.positions.length > this.config.maxBufferSize) {
+            data.positions = data.positions.slice(-Math.floor(this.config.maxBufferSize * 0.75));
         }
 
         data.timestamp = Date.now();
 
-        // Send mouse data via WebSocket
-        this.sendWebSocketMessage({
-            type: 'mouse_data',
-            sessionId: this.sessionId,
-            url: this.currentUrl,
-            positions: [...this.mouseBuffer],
-            timestamp: Date.now()
-        });
-
+        // Não enviar dados de mouse aqui - será enviado pelo timer
         // Clear buffer
         this.mouseBuffer = [];
         this.lastFlushTime = performance.now();
@@ -341,6 +380,136 @@ class PerformantHeatmapTracker {
                 timestamp: Date.now()
             });
         }
+    }
+
+    // Blur Security Functions
+    findSensitiveElements() {
+        const sensitiveElements = [];
+
+        this.config.sensitiveSelectors.forEach(selector => {
+            try {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(element => {
+                    if (this.isElementVisible(element)) {
+                        sensitiveElements.push(element);
+                    }
+                });
+            } catch (error) {
+                console.warn(`Invalid selector: ${selector}`, error);
+            }
+        });
+
+        return sensitiveElements;
+    }
+
+    isElementVisible(element) {
+        const rect = element.getBoundingClientRect();
+        const style = window.getComputedStyle(element);
+
+        return (
+            rect.width > 0 &&
+            rect.height > 0 &&
+            style.visibility !== 'hidden' &&
+            style.display !== 'none' &&
+            style.opacity !== '0'
+        );
+    }
+
+    getElementBounds(element) {
+        const rect = element.getBoundingClientRect();
+        return {
+            x: rect.left,
+            y: rect.top,
+            width: rect.width,
+            height: rect.height
+        };
+    }
+
+    applySensitiveElementBlur(canvas, ctx, scale = 1) {
+        if (!this.config.blurSensitiveText) return;
+
+        const sensitiveElements = this.findSensitiveElements();
+
+        sensitiveElements.forEach(element => {
+            const bounds = this.getElementBounds(element);
+
+            // Adjust bounds for canvas scale
+            const scaledBounds = {
+                x: bounds.x * scale,
+                y: bounds.y * scale,
+                width: bounds.width * scale,
+                height: bounds.height * scale
+            };
+
+            // Apply blur effect
+            this.blurCanvasArea(ctx, scaledBounds);
+        });
+    }
+
+    blurCanvasArea(ctx, bounds) {
+        const { x, y, width, height } = bounds;
+
+        // Create a temporary canvas for the blur effect
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+
+        tempCanvas.width = width;
+        tempCanvas.height = height;
+
+        // Copy the area to be blurred
+        const imageData = ctx.getImageData(x, y, width, height);
+        tempCtx.putImageData(imageData, 0, 0);
+
+        // Apply blur using CSS filter (if supported)
+        if (tempCtx.filter !== undefined) {
+            tempCtx.filter = `blur(${this.config.blurIntensity}px)`;
+            tempCtx.drawImage(tempCanvas, 0, 0);
+        } else {
+            // Fallback: Apply pixelation effect
+            this.pixelateImageData(tempCtx, width, height);
+        }
+
+        // Draw the blurred area back to the main canvas
+        ctx.drawImage(tempCanvas, x, y);
+
+        // Add a visual indicator (optional)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.fillRect(x, y, width, height);
+
+        // Add border to indicate blurred area
+        ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, y, width, height);
+    }
+
+    pixelateImageData(ctx, width, height) {
+        const imageData = ctx.getImageData(0, 0, width, height);
+        const data = imageData.data;
+        const pixelSize = Math.max(2, Math.floor(this.config.blurIntensity / 2));
+
+        for (let y = 0; y < height; y += pixelSize) {
+            for (let x = 0; x < width; x += pixelSize) {
+                const pixelIndex = (y * width + x) * 4;
+
+                const r = data[pixelIndex];
+                const g = data[pixelIndex + 1];
+                const b = data[pixelIndex + 2];
+                const a = data[pixelIndex + 3];
+
+                // Apply the same color to the entire pixel block
+                for (let dy = 0; dy < pixelSize && y + dy < height; dy++) {
+                    for (let dx = 0; dx < pixelSize && x + dx < width; dx++) {
+                        const targetIndex = ((y + dy) * width + (x + dx)) * 4;
+                        data[targetIndex] = r;
+                        data[targetIndex + 1] = g;
+                        data[targetIndex + 2] = b;
+                        data[targetIndex + 3] = a;
+                    }
+                }
+            }
+        }
+
+        ctx.putImageData(imageData, 0, 0);
     }
 
     // Optimized Canvas Operations
@@ -391,6 +560,10 @@ class PerformantHeatmapTracker {
                 viewport: {
                     width: window.innerWidth,
                     height: window.innerHeight
+                },
+                security: {
+                    blurApplied: this.config.blurSensitiveText,
+                    blurIntensity: this.config.blurIntensity
                 }
             });
 
@@ -418,11 +591,12 @@ class PerformantHeatmapTracker {
         ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(sourceCanvas, 0, 0, canvas.width, canvas.height);
 
-        // Draw heatmap
-        this.drawHeatmap(ctx, positions, ratio);
+        // Apply blur to sensitive elements ONLY (NÃO desenhar heatmap, trilha ou cliques)
+        this.applySensitiveElementBlur(canvas, ctx, ratio);
 
-        // Add metadata
-        this.addMetadata(ctx, this.currentUrl, positions.length);
+        // NÃO desenhar heatmap, trilha ou metadados
+        // NÃO chamar: this.drawHeatmap(ctx, positions, ratio);
+        // NÃO chamar: this.addMetadata(ctx, this.currentUrl, positions.length);
 
         return canvas;
     }
@@ -532,23 +706,29 @@ class PerformantHeatmapTracker {
         const urlText = url.length > 45 ? url.substring(0, 42) + '...' : url;
         const countText = `Pts: ${positionCount}`;
         const dateText = new Date().toLocaleTimeString();
-        const userText = config.userId ? `User: ${config.userId}` : 'User: anônimo';
+        const userText = this.config.userId ? `User: ${this.config.userId}` : 'User: anônimo';
+        const qualityText = `Quality: ${this.config.imageQuality}`;
+        const securityText = this.config.blurSensitiveText ? '🔒 Blur: ON' : '🔓 Blur: OFF';
 
         const maxWidth = Math.max(
             ctx.measureText(urlText).width,
             ctx.measureText(countText).width,
             ctx.measureText(dateText).width,
-            ctx.measureText(userText).width
+            ctx.measureText(userText).width,
+            ctx.measureText(qualityText).width,
+            ctx.measureText(securityText).width
         );
 
-        ctx.fillStyle = 'rgba(0,0,0,0.6)';
-        ctx.fillRect(padding, padding, maxWidth + padding * 2, (fontSize + 1.5) * 4 + padding);
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(padding, padding, maxWidth + padding * 2, (fontSize + 1.5) * 6 + padding);
 
         ctx.fillStyle = 'white';
         ctx.fillText(urlText, padding * 2, padding * 2 + fontSize);
         ctx.fillText(countText, padding * 2, padding * 2 + fontSize * 2 + 1.5);
         ctx.fillText(dateText, padding * 2, padding * 2 + fontSize * 3 + 3);
         ctx.fillText(userText, padding * 2, padding * 2 + fontSize * 4 + 4.5);
+        ctx.fillText(qualityText, padding * 2, padding * 2 + fontSize * 5 + 6);
+        ctx.fillText(securityText, padding * 2, padding * 2 + fontSize * 6 + 7.5);
     }
 
     async canvasToImageData(canvas) {
@@ -561,7 +741,7 @@ class PerformantHeatmapTracker {
                     resolve(base64);
                 };
                 reader.readAsDataURL(blob);
-            }, 'image/webp', config.imageQuality);
+            }, 'image/webp', this.config.imageQuality);
         });
     }
 
@@ -571,7 +751,7 @@ class PerformantHeatmapTracker {
             if (this.isMouseInFocus && this.heatmapData.get(this.currentUrl)?.positions.length > 0) {
                 this.takeScreenshot();
             }
-        }, 12000);
+        }, this.config.mouseDataInterval);
     }
 
     startCleanup() {
@@ -625,7 +805,14 @@ class PerformantHeatmapTracker {
     }
 
     updateConfig(newConfig) {
-        Object.assign(config, newConfig);
+        Object.assign(this.config, newConfig);
+
+        // Log configuration changes
+        console.log('Heatmap config updated:', {
+            imageQuality: this.config.imageQuality,
+            blurSensitiveText: this.config.blurSensitiveText,
+            blurIntensity: this.config.blurIntensity
+        });
     }
 
     // Public API
@@ -634,16 +821,65 @@ class PerformantHeatmapTracker {
             sessionId: this.sessionId,
             currentUrl: this.currentUrl,
             trackedUrls: Array.from(this.heatmapData.keys()),
-            serverUrl: config.serverUrl,
-            imageQuality: config.imageQuality,
-            userId: config.userId,
+            serverUrl: this.config.serverUrl,
+            imageQuality: this.config.imageQuality,
+            userId: this.config.userId,
             isConnected: this.isConnected,
+            security: {
+                blurSensitiveText: this.config.blurSensitiveText,
+                blurIntensity: this.config.blurIntensity,
+                sensitiveSelectorsCount: this.config.sensitiveSelectors.length
+            },
             bufferSizes: {
                 mouse: this.mouseBuffer.length,
                 click: this.clickBuffer.length,
-                trail: this.trailPoints.length
+                trail: this.trailPoints.length,
+                accumulatedMouse: this.accumulatedMouseData.length
+            },
+            timers: {
+                mouseDataInterval: this.config.mouseDataInterval,
+                captureInterval: 12000
             }
         };
+    }
+
+    // Security methods
+    addSensitiveSelector(selector) {
+        if (!this.config.sensitiveSelectors.includes(selector)) {
+            this.config.sensitiveSelectors.push(selector);
+            console.log(`Added sensitive selector: ${selector}`);
+        }
+    }
+
+    removeSensitiveSelector(selector) {
+        const index = this.config.sensitiveSelectors.indexOf(selector);
+        if (index > -1) {
+            this.config.sensitiveSelectors.splice(index, 1);
+            console.log(`Removed sensitive selector: ${selector}`);
+        }
+    }
+
+    setImageQuality(quality) {
+        if (quality >= 0.1 && quality <= 1.0) {
+            this.config.imageQuality = quality;
+            console.log(`Image quality set to: ${quality}`);
+        } else {
+            console.warn('Image quality must be between 0.1 and 1.0');
+        }
+    }
+
+    setBlurIntensity(intensity) {
+        if (intensity >= 1 && intensity <= 20) {
+            this.config.blurIntensity = intensity;
+            console.log(`Blur intensity set to: ${intensity}`);
+        } else {
+            console.warn('Blur intensity must be between 1 and 20');
+        }
+    }
+
+    toggleBlur(enabled) {
+        this.config.blurSensitiveText = enabled;
+        console.log(`Blur ${enabled ? 'enabled' : 'disabled'}`);
     }
 
     destroy() {
@@ -652,6 +888,7 @@ class PerformantHeatmapTracker {
         if (this.cleanupTimer) clearInterval(this.cleanupTimer);
         if (this.bufferFlushTimer) clearTimeout(this.bufferFlushTimer);
         if (this.urlCheckTimer) clearInterval(this.urlCheckTimer);
+        if (this.mouseDataTimer) clearInterval(this.mouseDataTimer);
 
         // Clean up RAF
         if (this.rafId) CANCEL_RAF(this.rafId);
@@ -666,13 +903,70 @@ class PerformantHeatmapTracker {
         this.mouseBuffer = [];
         this.clickBuffer = [];
         this.trailPoints = [];
+        this.accumulatedMouseData = [];
         this.canvasPool = [];
+        this.blurElementsCache = new WeakMap();
+
+        console.log('Heatmap tracker destroyed');
+    }
+
+    startMouseDataTimer() {
+        this.mouseDataTimer = setInterval(() => {
+            this.sendAccumulatedMouseData();
+        }, this.config.mouseDataInterval); // A cada 10 segundos
+    }
+
+    // Nova função para enviar dados de mouse acumulados
+    sendAccumulatedMouseData() {
+        if (this.accumulatedMouseData.length === 0) return;
+
+        console.log(`📤 Enviando ${this.accumulatedMouseData.length} pontos de mouse acumulados`);
+
+        // Enviar dados de mouse via WebSocket
+        this.sendWebSocketMessage({
+            type: 'mouse_data',
+            sessionId: this.sessionId,
+            url: this.currentUrl,
+            positions: [...this.accumulatedMouseData],
+            timestamp: Date.now()
+        });
+
+        // Limpar dados acumulados após envio
+        this.accumulatedMouseData = [];
     }
 }
 
-// Initialize
+// Factory function for creating tracker with custom config
+function createHeatmapTracker(customConfig = {}) {
+    return new PerformantHeatmapTracker(customConfig);
+}
+
+// Initialize with default config
 const heatmapTracker = new PerformantHeatmapTracker();
 
 // Global API
+window.HeatmapTracker = {
+    // Core methods
+    getSessionInfo: () => heatmapTracker.getSessionInfo(),
+    destroy: () => heatmapTracker.destroy(),
+
+    // Configuration methods
+    setImageQuality: (quality) => heatmapTracker.setImageQuality(quality),
+    setBlurIntensity: (intensity) => heatmapTracker.setBlurIntensity(intensity),
+    toggleBlur: (enabled) => heatmapTracker.toggleBlur(enabled),
+    updateConfig: (config) => heatmapTracker.updateConfig(config),
+
+    // Security methods
+    addSensitiveSelector: (selector) => heatmapTracker.addSensitiveSelector(selector),
+    removeSensitiveSelector: (selector) => heatmapTracker.removeSensitiveSelector(selector),
+
+    // Factory method
+    create: createHeatmapTracker,
+
+    // Get current config
+    getConfig: () => ({ ...heatmapTracker.config })
+};
+
+// Backwards compatibility
 window.getSessionInfo = () => heatmapTracker.getSessionInfo();
 window.destroyHeatmapTracker = () => heatmapTracker.destroy();

@@ -12,7 +12,7 @@ class HeatmapTrackerPlugin {
   /// [userId] - ID do usuário (opcional)
   static void initialize({
     String? serverUrl,
-    double imageQuality = 0.2,
+    double imageQuality = 0.8,
     String? userId,
   }) {
     _serverUrl = serverUrl;
@@ -23,7 +23,7 @@ class HeatmapTrackerPlugin {
       'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
       onLoad: () {
         _injectHeatmapConfig();
-        tr_injectScript('packages/flutter_heatmap_tracker/web/heatmap.js');
+        _injectScript('packages/flutter_heatmap_tracker/web/heatmap.js');
       },
     );
   }
@@ -36,7 +36,7 @@ class HeatmapTrackerPlugin {
         // Configurações do Heatmap Tracker Plugin
         window.HEATMAP_CONFIG = {
           serverUrl: "${_serverUrl ?? 'http://localhost:3001'}",
-          imageQuality: ${_imageQuality ?? 0.2},
+          imageQuality: ${_imageQuality ?? 0.8},
           userId: ${_userId != null ? '"$_userId"' : 'null'}
         };
         console.log('Heatmap Config injected:', window.HEATMAP_CONFIG);

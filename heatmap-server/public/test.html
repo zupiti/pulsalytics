@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Heatmap Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .test-area {
+            padding: 20px;
+            border: 2px dashed #ddd;
+            margin: 20px 0;
+            text-align: center;
+            background: #f9f9f9;
+        }
+
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+
+        .button:hover {
+            background: #0056b3;
+        }
+
+        .info {
+            background: #e7f3ff;
+            border: 1px solid #b3d7ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .status.disconnected {
+            background: #dc3545;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            padding: 10px;
+            margin: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 200px;
+        }
+
+        .sensitive-area {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="status" class="status disconnected">🔴 Desconectado</div>
+
+    <div class="container">
+        <h1>🎯 Teste do Heatmap Tracker</h1>
+
+        <div class="info">
+            <h3>📊 Informações da Sessão</h3>
+            <p><strong>Sessão ID:</strong> <span id="sessionId">Carregando...</span></p>
+            <p><strong>URL:</strong> <span id="currentUrl">Carregando...</span></p>
+            <p><strong>Servidor WebSocket:</strong> <span id="wsServer">Carregando...</span></p>
+            <p><strong>Qualidade da Imagem:</strong> <span id="imageQuality">Carregando...</span></p>
+        </div>
+
+        <div class="test-area">
+            <h3>🖱️ Área de Teste - Mova o mouse aqui!</h3>
+            <p>Mova o mouse sobre esta área para gerar dados de heatmap.</p>
+            <button class="button" onclick="testClick()">Clique para Testar</button>
+            <button class="button" onclick="showInfo()">Mostrar Informações</button>
+        </div>
+
+        <div class="sensitive-area">
+            <h3>🔒 Área Sensível (será borrada)</h3>
+            <p>Esta área contém campos sensíveis que devem ser borrados nos screenshots:</p>
+            <input type="text" placeholder="Nome completo" class="sensitive-text">
+            <input type="email" placeholder="Email">
+            <input type="password" placeholder="Senha">
+            <input type="text" placeholder="CPF" name="cpf">
+        </div>
+
+        <div class="test-area">
+            <h3>🎯 Teste de Cliques</h3>
+            <button class="button" onclick="testMultipleClicks()">Cliques Múltiplos</button>
+            <button class="button" onclick="testFormFill()">Preencher Formulário</button>
+            <button class="button" onclick="testNavigation()">Simular Navegação</button>
+        </div>
+
+        <div class="info">
+            <h3>📝 Log de Atividades</h3>
+            <div id="activityLog"
+                style="height: 200px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px;">
+                <div>Sistema iniciado...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Incluir o heatmap.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="/heatmap.js"></script>
+
+    <script>
+        // Função para adicionar logs ao display
+        function addLog(message) {
+            const logDiv = document.getElementById('activityLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // Atualizar status da conexão
+        function updateConnectionStatus() {
+            const statusDiv = document.getElementById('status');
+            const info = window.HeatmapTracker.getSessionInfo();
+
+            if (info.isConnected) {
+                statusDiv.textContent = '🟢 Conectado';
+                statusDiv.className = 'status';
+            } else {
+                statusDiv.textContent = '🔴 Desconectado';
+                statusDiv.className = 'status disconnected';
+            }
+        }
+
+        // Atualizar informações da sessão
+        function updateSessionInfo() {
+            try {
+                const info = window.HeatmapTracker.getSessionInfo();
+                document.getElementById('sessionId').textContent = info.sessionId;
+                document.getElementById('currentUrl').textContent = info.currentUrl;
+                document.getElementById('wsServer').textContent = info.serverUrl;
+                document.getElementById('imageQuality').textContent = info.imageQuality;
+            } catch (error) {
+                addLog('Erro ao obter informações da sessão: ' + error.message);
+            }
+        }
+
+        // Funções de teste
+        function testClick() {
+            addLog('Clique de teste executado');
+        }
+
+        function showInfo() {
+            const info = window.HeatmapTracker.getSessionInfo();
+            addLog('Informações da sessão: ' + JSON.stringify(info, null, 2));
+        }
+
+        function testMultipleClicks() {
+            addLog('Executando múltiplos cliques...');
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    addLog(`Clique ${i + 1}/5`);
+                }, i * 500);
+            }
+        }
+
+        function testFormFill() {
+            addLog('Preenchendo formulário de teste...');
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach((input, index) => {
+                setTimeout(() => {
+                    input.focus();
+                    input.value = `Teste ${index + 1}`;
+                    addLog(`Campo ${index + 1} preenchido`);
+                }, index * 300);
+            });
+        }
+
+        function testNavigation() {
+            addLog('Simulando mudança de URL...');
+            const newUrl = window.location.href + '?test=' + Date.now();
+            window.history.pushState({}, '', newUrl);
+            addLog('URL alterada para: ' + newUrl);
+        }
+
+        // Inicializar quando a página carregar
+        window.addEventListener('load', () => {
+            addLog('Página carregada, inicializando heatmap...');
+
+            // Aguardar um pouco para o heatmap inicializar
+            setTimeout(() => {
+                updateSessionInfo();
+                updateConnectionStatus();
+                addLog('Heatmap inicializado!');
+            }, 1000);
+
+            // Atualizar status periodicamente
+            setInterval(() => {
+                updateConnectionStatus();
+            }, 2000);
+        });
+
+        // Interceptar logs do console para mostrar no display
+        const originalLog = console.log;
+        console.log = function (...args) {
+            originalLog.apply(console, args);
+            addLog(args.join(' '));
+        };
+    </script>
+</body>
+
+</html>
