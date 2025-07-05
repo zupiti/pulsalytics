@@ -62,7 +62,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize the plugin
-  HeatmapTrackerPlugin.initialize(
+  PulsalyticsPlugin.initialize(
     serverUrl: 'https://your-server.com/api',
   );
   
@@ -73,7 +73,7 @@ void main() async {
 ### 2. Full Configuration
 
 ```dart
-HeatmapTrackerPlugin.initialize(
+PulsalyticsPlugin.initialize(
   serverUrl: 'https://your-server.com/api',    // Required
   imageQuality: 0.8,                           // Optional (0.0 - 1.0)
   userId: 'user_123',                          // Optional
@@ -84,12 +84,12 @@ HeatmapTrackerPlugin.initialize(
 
 ```dart
 // Check if initialized
-bool isReady = HeatmapTrackerPlugin.isInitialized;
+bool isReady = PulsalyticsPlugin.isInitialized;
 
 // Access settings
-String? serverUrl = HeatmapTrackerPlugin.serverUrl;
-double? quality = HeatmapTrackerPlugin.imageQuality;
-String? userId = HeatmapTrackerPlugin.userId;
+String? serverUrl = PulsalyticsPlugin.serverUrl;
+double? quality = PulsalyticsPlugin.imageQuality;
+String? userId = PulsalyticsPlugin.userId;
 ```
 
 ## Server Configuration
