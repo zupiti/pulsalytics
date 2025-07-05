@@ -1,59 +1,59 @@
 # Flutter Heatmap Tracker
 
-> ⚠️ **Aviso:** Este projeto ainda está em fase de desenvolvimento. Faltam implementações para tratamento de dados sensíveis e otimização de código. Use apenas para testes e desenvolvimento!
+> ⚠️ **Warning:** This project is still under development. Sensitive data handling and code optimization are not yet implemented. Use for testing and development only!
 
-> **Atenção:** Para utilizar todas as funcionalidades desta biblioteca, é necessário:
+> **Attention:** To use all features of this library, you must:
 >
-> 1. Rodar o painel de administração (admin-ui):
->    - Entre na pasta `admin-ui` e execute `npm install` e depois `npm start`.
->    - O painel permite visualizar sessões, heatmaps e monitorar usuários em tempo real.
-> 2. Rodar o servidor de WebSocket:
->    - Entre na pasta `heatmap-server` e execute `npm install` e depois `npm run websocket`.
->    - Este servidor recebe dados em tempo real do plugin Flutter e os disponibiliza para o admin-ui.
+> 1. Run the admin panel (admin-ui):
+>    - Go to the `admin-ui` folder and run `npm install` then `npm start`.
+>    - The panel allows you to view sessions, heatmaps, and monitor users in real time.
+> 2. Run the WebSocket server:
+>    - Go to the `heatmap-server` folder and run `npm install` then `npm run websocket`.
+>    - This server receives real-time data from the Flutter plugin and makes it available to the admin-ui.
 >
-> Ambos devem estar ativos para o monitoramento e visualização em tempo real.
+> Both must be running for real-time monitoring and visualization.
 
-## Finalidade
+## Purpose
 
-Esta biblioteca tem como objetivo rastrear interações de usuários em aplicações Flutter Web, gerando heatmaps, capturando cliques, movimentos do mouse e screenshots, e enviando esses dados para um servidor backend. O objetivo é fornecer insights detalhados sobre o comportamento do usuário, facilitando a análise de usabilidade e a identificação de pontos de interesse ou problemas na interface.
+This library aims to track user interactions in Flutter Web applications, generating heatmaps, capturing clicks, mouse movements, and screenshots, and sending this data to a backend server. The goal is to provide detailed insights into user behavior, making it easier to analyze usability and identify points of interest or interface issues.
 
-## Como funciona?
+## How does it work?
 
-- O plugin coleta dados de interação do usuário (mouse, cliques, screenshots) e envia para o servidor via HTTP e WebSocket.
-- O servidor armazena e processa esses dados.
-- O admin-ui permite visualizar sessões ativas, heatmaps e estatísticas em tempo real.
+- The plugin collects user interaction data (mouse, clicks, screenshots) and sends it to the server via HTTP and WebSocket.
+- The server stores and processes this data.
+- The admin-ui allows you to view active sessions, heatmaps, and real-time statistics.
 
-![Exemplo de uso](./usage.png)
+![Usage example](./usage.png)
 
-## Funcionalidades
+## Features
 
-- 🎯 **Rastreamento de movimento do mouse** - Captura posições do cursor em tempo real
-- 🖱️ **Detecção de cliques** - Registra todos os cliques do usuário na interface
-- 📸 **Screenshots automáticas** - Gera capturas de tela com overlay de heatmap
-- 🌐 **Suporte a múltiplas URLs** - Rastreia diferentes páginas da aplicação
-- 📤 **Upload automático** - Envia dados para servidor configurado
-- 👤 **Identificação de usuário** - Suporte opcional a ID de usuário
-- ⚡ **Performance otimizada** - Sistema invisível e de alta performance
-- 🎨 **Visualização em tempo real** - Overlay visual opcional para debug
+- 🎯 **Mouse movement tracking** - Captures cursor positions in real time
+- 🖱️ **Click detection** - Records all user clicks on the interface
+- 📸 **Automatic screenshots** - Generates screenshots with heatmap overlay
+- 🌐 **Multiple URL support** - Tracks different pages of the application
+- 📤 **Automatic upload** - Sends data to the configured server
+- 👤 **User identification** - Optional user ID support
+- ⚡ **Optimized performance** - Invisible and high-performance system
+- 🎨 **Real-time visualization** - Optional visual overlay for debugging
 
-## Instalação
+## Installation
 
-Adicione a dependência no seu `pubspec.yaml`:
+Add the dependency to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
   flutter_pulsalytics: ^1.0.0
 ```
 
-Execute:
+Run:
 
 ```bash
 flutter pub get
 ```
 
-## Uso Básico
+## Basic Usage
 
-### 1. Inicialização Simples
+### 1. Simple Initialization
 
 ```dart
 import 'package:flutter_pulsalytics/flutter_pulsalytics.dart';
@@ -61,64 +61,64 @@ import 'package:flutter_pulsalytics/flutter_pulsalytics.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Inicializa o plugin
+  // Initialize the plugin
   HeatmapTrackerPlugin.initialize(
-    serverUrl: 'https://seu-servidor.com/api',
+    serverUrl: 'https://your-server.com/api',
   );
   
   runApp(MyApp());
 }
 ```
 
-### 2. Configuração Completa
+### 2. Full Configuration
 
 ```dart
 HeatmapTrackerPlugin.initialize(
-  serverUrl: 'https://seu-servidor.com/api',    // Obrigatório
-  imageQuality: 0.8,                            // Opcional (0.0 - 1.0)
-  userId: 'user_123',                           // Opcional
+  serverUrl: 'https://your-server.com/api',    // Required
+  imageQuality: 0.8,                           // Optional (0.0 - 1.0)
+  userId: 'user_123',                          // Optional
 );
 ```
 
-### 3. Verificação de Status
+### 3. Status Check
 
 ```dart
-// Verificar se foi inicializado
+// Check if initialized
 bool isReady = HeatmapTrackerPlugin.isInitialized;
 
-// Acessar configurações
+// Access settings
 String? serverUrl = HeatmapTrackerPlugin.serverUrl;
 double? quality = HeatmapTrackerPlugin.imageQuality;
 String? userId = HeatmapTrackerPlugin.userId;
 ```
 
-## Configuração do Servidor
+## Server Configuration
 
-O plugin envia dados para dois endpoints:
+The plugin sends data to two endpoints:
 
-### Upload de Imagens
+### Image Upload
 ```
 POST /upload
 Content-Type: multipart/form-data
 
-Campos:
-- image: arquivo de imagem (WebP ou JPEG)
-- userId: ID do usuário (se configurado)
+Fields:
+- image: image file (WebP or JPEG)
+- userId: user ID (if configured)
 ```
 
-### Eventos de Sessão
+### Session Events
 ```
 POST /session-event
 Content-Type: application/x-www-form-urlencoded
 
-Campos:
-- sessionId: ID da sessão
+Fields:
+- sessionId: session ID
 - eventType: 'session_end'
-- timestamp: timestamp do evento
-- userId: ID do usuário (se configurado)
+- timestamp: event timestamp
+- userId: user ID (if configured)
 ```
 
-## Exemplo de Servidor Node.js
+## Node.js Server Example
 
 ```javascript
 const express = require('express');
@@ -131,135 +131,135 @@ app.use(express.urlencoded({ extended: true }));
 
 const upload = multer({ dest: 'uploads/' });
 
-// Upload de imagens
+// Image upload
 app.post('/upload', upload.single('image'), (req, res) => {
-  console.log('Imagem recebida:', req.file.filename);
+  console.log('Image received:', req.file.filename);
   console.log('User ID:', req.body.userId);
   res.json({ success: true });
 });
 
-// Eventos de sessão
+// Session events
 app.post('/session-event', (req, res) => {
-  console.log('Evento:', req.body);
+  console.log('Event:', req.body);
   res.json({ success: true });
 });
 
 app.listen(3001, () => {
-  console.log('Servidor rodando na porta 3001');
+  console.log('Server running on port 3001');
 });
 ```
 
-## Funcionamento
+## How it works
 
-### Captura Automática
-- **Fast Capture**: A cada 500ms quando o mouse está em movimento
-- **Screenshot Completa**: A cada 10 segundos
-- **Detecção de Mudança de URL**: Automática para SPAs
+### Automatic Capture
+- **Fast Capture**: Every 500ms when the mouse is moving
+- **Full Screenshot**: Every 10 seconds
+- **URL Change Detection**: Automatic for SPAs
 
-### Dados Capturados
-- Posições do mouse (x, y, timestamp)
-- Cliques do usuário (x, y, timestamp)
-- URL atual da página
-- Session ID único por usuário
-- Metadados da sessão
+### Data Captured
+- Mouse positions (x, y, timestamp)
+- User clicks (x, y, timestamp)
+- Current page URL
+- Unique session ID per user
+- Session metadata
 
-### Formato das Imagens
-- **Formato**: WebP (com fallback para JPEG)
-- **Resolução**: Máximo 1920x1080
-- **Qualidade**: Configurável (padrão: 0.2)
-- **Overlay**: Heatmap + rastro do mouse + cliques
+### Image Format
+- **Format**: WebP (with JPEG fallback)
+- **Resolution**: Maximum 1920x1080
+- **Quality**: Configurable (default: 0.2)
+- **Overlay**: Heatmap + mouse trail + clicks
 
-## Configurações Avançadas
+## Advanced Settings
 
-### Qualidade da Imagem
+### Image Quality
 ```dart
-// Baixa qualidade, menor tamanho (recomendado para produção)
+// Low quality, smaller size (recommended for production)
 imageQuality: 0.2
 
-// Alta qualidade, maior tamanho (recomendado para debug)
+// High quality, larger size (recommended for debugging)
 imageQuality: 0.8
 ```
 
-### Identificação de Usuário
+### User Identification
 ```dart
-// Sem identificação
+// No identification
 userId: null
 
-// Com ID personalizado
+// With custom ID
 userId: 'user_${DateTime.now().millisecondsSinceEpoch}'
 
-// Com ID do sistema de autenticação
+// With authentication system ID
 userId: currentUser.id
 ```
 
-## Debug e Monitoramento
+## Debugging and Monitoring
 
-### Console do Navegador
-O plugin gera logs detalhados no console:
+### Browser Console
+The plugin generates detailed logs in the console:
 
 ```javascript
-// Verificar dados do heatmap
+// Check heatmap data
 showHeatmapData()
 
-// Informações da sessão
+// Session information
 getSessionInfo()
 
-// Reset da sessão (desenvolvimento)
+// Reset session (development)
 resetSession()
 ```
 
-### Funções de Debug Disponíveis
-- `window.showHeatmapData()` - Mostra dados coletados
-- `window.getSessionInfo()` - Informações da sessão atual
-- `window.resetSession()` - Reset da sessão (requer reload)
+### Available Debug Functions
+- `window.showHeatmapData()` - Shows collected data
+- `window.getSessionInfo()` - Current session information
+- `window.resetSession()` - Reset session (requires reload)
 
-## Considerações de Performance
+## Performance Considerations
 
-### Otimizações Implementadas
-- Compressão automática de imagens
-- Throttling de capturas por movimento
-- Cleanup automático de dados antigos
-- Sistema totalmente invisível ao usuário
+### Implemented Optimizations
+- Automatic image compression
+- Throttling of captures by movement
+- Automatic cleanup of old data
+- System completely invisible to the user
 
-### Recomendações
-- Use qualidade de imagem baixa (0.2-0.4) em produção
-- Configure servidor com boa capacidade de armazenamento
-- Monitore o tamanho dos uploads
-- Implemente rotação de logs no servidor
+### Recommendations
+- Use low image quality (0.2-0.4) in production
+- Set up the server with good storage capacity
+- Monitor upload sizes
+- Implement log rotation on the server
 
-## Compatibilidade
+## Compatibility
 
-- ✅ **Flutter Web**: Suporte completo
-- ❌ **Flutter Mobile**: Não suportado (específico para web)
-- ✅ **Navegadores**: Chrome, Firefox, Safari, Edge
+- ✅ **Flutter Web**: Full support
+- ❌ **Flutter Mobile**: Not supported (web only)
+- ✅ **Browsers**: Chrome, Firefox, Safari, Edge
 
-## Requisitos
+## Requirements
 
 - Flutter >= 2.0.0
 - Dart >= 2.12.0
-- Navegador com suporte a html2canvas
-- Servidor para receber uploads
+- Browser with html2canvas support
+- Server to receive uploads
 
-## Exemplo Completo
+## Complete Example
 
-Veja o exemplo completo na pasta `/example` do plugin.
+See the complete example in the `/example` folder of the plugin.
 
-## Contribuição
+## Contribution
 
-Contribuições são bem-vindas! Por favor:
+Contributions are welcome! Please:
 
-1. Fork o projeto
-2. Crie uma branch para sua feature
-3. Faça commit das mudanças
-4. Abra um Pull Request
+1. Fork the project
+2. Create a branch for your feature
+3. Commit your changes
+4. Open a Pull Request
 
-## Licença
+## License
 
-Este projeto está sob a licença MIT. Veja o arquivo LICENSE para detalhes.
+This project is licensed under the MIT license. See the LICENSE file for details.
 
-## Suporte
+## Support
 
-Para dúvidas e problemas:
-- Abra uma issue no GitHub
-- Consulte a documentação do exemplo
-- Verifique os logs do console do navegador
+For questions and issues:
+- Open an issue on GitHub
+- Check the example documentation
+- Check the browser console logs

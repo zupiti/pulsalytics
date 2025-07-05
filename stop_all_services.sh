@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🛑 Parando Clarity Analytics Platform..."
+echo "🛑 Parando Pulsalytics Analytics Platform..."
 
 # Função para matar processo por PID
 kill_process() {
@@ -74,5 +74,5 @@ kill_port 3004 "WebSocket Admin"
 sleep 2
 
 echo ""
-echo "✅ Clarity Analytics Platform parado com sucesso!"
+echo "✅ Pulsalytics Analytics Platform stopped successfully!"
 echo "" 

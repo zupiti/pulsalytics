@@ -1,188 +1,265 @@
-# Clarity Analytics Platform
+# Flutter Heatmap Tracker
 
-Sistema simplificado de heatmap e analytics para monitoramento de interações do usuário em tempo real.
+> ⚠️ **Warning:** This project is still under development. Sensitive data handling and code optimization are not yet implemented. Use for testing and development only!
 
-## 🚀 Funcionalidades
+> **Attention:** To use all features of this library, you must:
+>
+> 1. Run the admin panel (admin-ui):
+>    - Go to the `admin-ui` folder and run `npm install` then `npm start`.
+>    - The panel allows you to view sessions, heatmaps, and monitor users in real time.
+> 2. Run the WebSocket server:
+>    - Go to the `heatmap-server` folder and run `npm install` then `npm run websocket`.
+>    - This server receives real-time data from the Flutter plugin and makes it available to the admin-ui.
+>
+> Both must be running for real-time monitoring and visualization.
 
-- **Script JavaScript Simplificado**: Captura movimento do mouse e cliques em intervalos de 1 segundo
-- **Backend WebSocket**: Recebe dados via WebSocket e grava na pasta `uploads`
-- **Interface Admin React**: Visualiza e reproduz sessões capturadas
-- **Tempo Real**: Atualizações automáticas via WebSocket
+## Purpose
 
-## 📋 Pré-requisitos
+This library aims to track user interactions in Flutter Web applications, generating heatmaps, capturing clicks, mouse movements, and screenshots, and sending this data to a backend server. The goal is to provide detailed insights into user behavior, making it easier to analyze usability and identify points of interest or interface issues.
 
-- Node.js (versão 14 ou superior)
-- npm
-- Navegador moderno com suporte a WebSocket
+## How does it work?
 
-## 🔧 Instalação e Uso
+- The plugin collects user interaction data (mouse, clicks, screenshots) and sends it to the server via HTTP and WebSocket.
+- The server stores and processes this data.
+- The admin-ui allows you to view active sessions, heatmaps, and real-time statistics.
 
-### 1. Iniciar o Sistema
+![Usage example](./usage.png)
+
+## Features
+
+- 🎯 **Mouse movement tracking** - Captures cursor positions in real time
+- 🖱️ **Click detection** - Records all user clicks on the interface
+- 📸 **Automatic screenshots** - Generates screenshots with heatmap overlay
+- 🌐 **Multiple URL support** - Tracks different pages of the application
+- 📤 **Automatic upload** - Sends data to the configured server
+- 👤 **User identification** - Optional user ID support
+- ⚡ **Optimized performance** - Invisible and high-performance system
+- 🎨 **Real-time visualization** - Optional visual overlay for debugging
+
+## Installation
+
+Add the dependency to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  flutter_pulsalytics: ^1.0.0
+```
+
+Run:
 
 ```bash
-# Dar permissão aos scripts
-chmod +x start_all_services.sh stop_all_services.sh
-
-# Iniciar todos os serviços
-./start_all_services.sh
+flutter pub get
 ```
 
-### 2. Acessar a Interface
+## Basic Usage
 
-- **Admin Interface**: http://localhost:3000
-- **API Backend**: http://localhost:3001
+### 1. Simple Initialization
 
-### 3. Integrar o Script no seu Site
+```dart
+import 'package:flutter_pulsalytics/flutter_pulsalytics.dart';
 
-Adicione o script heatmap.js no seu site:
-
-```html
-<!-- Incluir html2canvas (dependência) -->
-<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-
-<!-- Incluir o script do heatmap -->
-<script src="http://localhost:3001/flutter_heatmap_tracker/web/heatmap.js"></script>
-
-<!-- Configuração opcional -->
-<script>
-window.HEATMAP_CONFIG = {
-    serverUrl: 'ws://localhost:3002',
-    interval: 1000, // Intervalo em milissegundos (padrão: 1 segundo)
-    userId: 'usuario-123' // ID do usuário (opcional)
-};
-</script>
-```
-
-### 4. Formato dos Dados
-
-O script envia dados no seguinte formato:
-
-```json
-{
-    "sessionId": "string_timestamp_random",
-    "timestamp": 1640995200000,
-    "url": "https://meusite.com/pagina",
-    "base64": "data:image/webp;base64,UklGRi...",
-    "positions": [
-        {"x": 100, "y": 200, "timestamp": 1640995200000},
-        {"x": 105, "y": 205, "timestamp": 1640995201000}
-    ],
-    "clickPoints": [
-        {"x": 150, "y": 250, "timestamp": 1640995201500}
-    ]
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize the plugin
+  HeatmapTrackerPlugin.initialize(
+    serverUrl: 'https://your-server.com/api',
+  );
+  
+  runApp(MyApp());
 }
 ```
 
-## 🗂️ Estrutura do Projeto
+### 2. Full Configuration
 
-```
-clarity/
-├── heatmap-server/           # Servidor backend
-│   ├── server.js            # Servidor principal simplificado
-│   ├── uploads/             # Arquivos salvos (JSON + imagens)
-│   └── public/              # Interface admin estática
-├── admin-ui/                # Interface React do admin
-│   └── src/
-│       ├── App.js           # Aplicação principal
-│       ├── components/      # Componentes React
-│       └── pages/           # Páginas da aplicação
-├── flutter_heatmap_tracker/
-│   └── web/
-│       └── heatmap.js       # Script simplificado
-├── start_all_services.sh    # Script para iniciar
-└── stop_all_services.sh     # Script para parar
+```dart
+HeatmapTrackerPlugin.initialize(
+  serverUrl: 'https://your-server.com/api',    // Required
+  imageQuality: 0.8,                           // Optional (0.0 - 1.0)
+  userId: 'user_123',                          // Optional
+);
 ```
 
-## 📡 Endpoints da API
+### 3. Status Check
 
-### GET /api/uploads
-Retorna todos os arquivos agrupados por sessão:
+```dart
+// Check if initialized
+bool isReady = HeatmapTrackerPlugin.isInitialized;
 
-```json
-{
-    "session_123": [
-        {
-            "filename": "session_123_1640995200000.webp",
-            "sessionId": "session_123",
-            "timestamp": 1640995200000,
-            "url": "/uploads/session_123_1640995200000.webp"
-        }
-    ]
-}
+// Access settings
+String? serverUrl = HeatmapTrackerPlugin.serverUrl;
+double? quality = HeatmapTrackerPlugin.imageQuality;
+String? userId = HeatmapTrackerPlugin.userId;
 ```
 
-### DELETE /api/session/:sessionId
-Deleta todos os arquivos de uma sessão específica.
+## Server Configuration
 
-## 🔧 Configuração
+The plugin sends data to two endpoints:
 
-### Script JavaScript
+### Image Upload
+```
+POST /upload
+Content-Type: multipart/form-data
+
+Fields:
+- image: image file (WebP or JPEG)
+- userId: user ID (if configured)
+```
+
+### Session Events
+```
+POST /session-event
+Content-Type: application/x-www-form-urlencoded
+
+Fields:
+- sessionId: session ID
+- eventType: 'session_end'
+- timestamp: event timestamp
+- userId: user ID (if configured)
+```
+
+## Node.js Server Example
 
 ```javascript
-window.HEATMAP_CONFIG = {
-    serverUrl: 'ws://localhost:3002',  // URL do WebSocket
-    interval: 1000,                    // Intervalo de captura (ms)
-    userId: null                       // ID do usuário
-};
+const express = require('express');
+const multer = require('multer');
+const cors = require('cors');
+const app = express();
+
+app.use(cors());
+app.use(express.urlencoded({ extended: true }));
+
+const upload = multer({ dest: 'uploads/' });
+
+// Image upload
+app.post('/upload', upload.single('image'), (req, res) => {
+  console.log('Image received:', req.file.filename);
+  console.log('User ID:', req.body.userId);
+  res.json({ success: true });
+});
+
+// Session events
+app.post('/session-event', (req, res) => {
+  console.log('Event:', req.body);
+  res.json({ success: true });
+});
+
+app.listen(3001, () => {
+  console.log('Server running on port 3001');
+});
 ```
 
-### Servidor Backend
+## How it works
 
-O servidor roda nas seguintes portas:
-- **3001**: HTTP Server (API + Admin)
-- **3002**: WebSocket Server (recebe dados do script)
-- **3004**: WebSocket Admin (comunica com React)
+### Automatic Capture
+- **Fast Capture**: Every 500ms when the mouse is moving
+- **Full Screenshot**: Every 10 seconds
+- **URL Change Detection**: Automatic for SPAs
 
-## 🛑 Parar o Sistema
+### Data Captured
+- Mouse positions (x, y, timestamp)
+- User clicks (x, y, timestamp)
+- Current page URL
+- Unique session ID per user
+- Session metadata
 
-```bash
-./stop_all_services.sh
+### Image Format
+- **Format**: WebP (with JPEG fallback)
+- **Resolution**: Maximum 1920x1080
+- **Quality**: Configurable (default: 0.2)
+- **Overlay**: Heatmap + mouse trail + clicks
+
+## Advanced Settings
+
+### Image Quality
+```dart
+// Low quality, smaller size (recommended for production)
+imageQuality: 0.2
+
+// High quality, larger size (recommended for debugging)
+imageQuality: 0.8
 ```
 
-## 📊 Visualização dos Dados
+### User Identification
+```dart
+// No identification
+userId: null
 
-1. Acesse http://localhost:3000
-2. Navegue entre as páginas:
-   - **Overview**: Estatísticas gerais
-   - **Sessions**: Lista de sessões
-   - **Player**: Reprodutor de sessões
+// With custom ID
+userId: 'user_${DateTime.now().millisecondsSinceEpoch}'
 
-## 🐛 Troubleshooting
-
-### Porta já em uso
-```bash
-# Verificar processos nas portas
-lsof -i :3001
-lsof -i :3002
-lsof -i :3004
-
-# Matar processo específico
-kill -9 <PID>
+// With authentication system ID
+userId: currentUser.id
 ```
 
-### WebSocket não conecta
-- Verifique se o servidor está rodando na porta 3002
-- Verifique se não há firewall bloqueando a conexão
-- Confirme que o script está apontando para o servidor correto
+## Debugging and Monitoring
 
-### Dados não aparecem no admin
-- Verifique o console do navegador para erros
-- Confirme que o WebSocket admin (porta 3004) está conectado
-- Verifique se os arquivos estão sendo salvos em `heatmap-server/uploads/`
+### Browser Console
+The plugin generates detailed logs in the console:
 
-## 🔒 Considerações de Segurança
+```javascript
+// Check heatmap data
+showHeatmapData()
 
-- **Desenvolvimento**: Este sistema foi projetado para ambiente de desenvolvimento
-- **Produção**: Para produção, configure HTTPS/WSS e autenticação
-- **CORS**: Configure adequadamente para seu domínio
-- **Dados Sensíveis**: O sistema captura screenshots - certifique-se de compliance
+// Session information
+getSessionInfo()
 
-## 📝 Changelog
+// Reset session (development)
+resetSession()
+```
 
-### v2.0.0 - Sistema Simplificado
-- Removido código complexo de heatmap
-- Simplificado para captura básica de mouse/cliques + screenshots
-- Formato de dados padronizado
-- Interface React modernizada
-- Scripts de deploy simplificados
+### Available Debug Functions
+- `window.showHeatmapData()` - Shows collected data
+- `window.getSessionInfo()` - Current session information
+- `window.resetSession()` - Reset session (requires reload)
 
+## Performance Considerations
+
+### Implemented Optimizations
+- Automatic image compression
+- Throttling of captures by movement
+- Automatic cleanup of old data
+- System completely invisible to the user
+
+### Recommendations
+- Use low image quality (0.2-0.4) in production
+- Set up the server with good storage capacity
+- Monitor upload sizes
+- Implement log rotation on the server
+
+## Compatibility
+
+- ✅ **Flutter Web**: Full support
+- ❌ **Flutter Mobile**: Not supported (web only)
+- ✅ **Browsers**: Chrome, Firefox, Safari, Edge
+
+## Requirements
+
+- Flutter >= 2.0.0
+- Dart >= 2.12.0
+- Browser with html2canvas support
+- Server to receive uploads
+
+## Complete Example
+
+See the complete example in the `/example` folder of the plugin.
+
+## Contribution
+
+Contributions are welcome! Please:
+
+1. Fork the project
+2. Create a branch for your feature
+3. Commit your changes
+4. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT license. See the LICENSE file for details.
+
+## Support
+
+For questions and issues:
+- Open an issue on GitHub
+- Check the example documentation
+- Check the browser console logs

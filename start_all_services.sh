@@ -1,16 +1,16 @@
 #!/bin/bash
 
-echo "🚀 Iniciando Clarity Analytics Platform..."
+echo "🚀 Starting Pulsalytics Analytics Platform..."
 
 # Verificar se o Node.js está instalado
 if ! command -v node &> /dev/null; then
-    echo "❌ Node.js não encontrado. Por favor, instale o Node.js primeiro."
+    echo "❌ Node.js not found. Please install Node.js first."
     exit 1
 fi
 
 # Verificar se o npm está instalado
 if ! command -v npm &> /dev/null; then
-    echo "❌ npm não encontrado. Por favor, instale o npm primeiro."
+    echo "❌ npm not found. Please install npm first."
     exit 1
 fi
 
@@ -18,47 +18,47 @@ fi
 check_port() {
     local port=$1
     if lsof -Pi :$port -sTCP:LISTEN -t >/dev/null 2>&1; then
-        echo "⚠️  Porta $port já está em uso."
+        echo "⚠️  Port $port is already in use."
         return 1
     fi
     return 0
 }
 
 # Verificar portas necessárias
-echo "🔍 Verificando portas..."
+echo "🔍 Checking ports..."
 if ! check_port 3001; then
-    echo "❌ Porta 3001 (servidor principal) já está em uso. Por favor, libere a porta."
+    echo "❌ Port 3001 (main server) is already in use. Please free the port."
     exit 1
 fi
 
 if ! check_port 3002; then
-    echo "❌ Porta 3002 (WebSocket heatmap) já está em uso. Por favor, libere a porta."
+    echo "❌ Port 3002 (WebSocket heatmap) is already in use. Please free the port."
     exit 1
 fi
 
 if ! check_port 3004; then
-    echo "❌ Porta 3004 (WebSocket admin) já está em uso. Por favor, libere a porta."
+    echo "❌ Port 3004 (WebSocket admin) is already in use. Please free the port."
     exit 1
 fi
 
 if ! check_port 3000; then
-    echo "❌ Porta 3000 (React admin) já está em uso. Por favor, libere a porta."
+    echo "❌ Port 3000 (React admin) is already in use. Please free the port."
     exit 1
 fi
 
 # Instalar dependências do servidor se necessário
-echo "📦 Verificando dependências do servidor..."
+echo "📦 Checking server dependencies..."
 cd heatmap-server
 if [ ! -d "node_modules" ]; then
-    echo "📦 Instalando dependências do servidor..."
+    echo "📦 Installing server dependencies..."
     npm install
 fi
 
 # Iniciar servidor em background
-echo "🔧 Iniciando servidor backend..."
+echo "🔧 Starting backend server..."
 node server.js &
 SERVER_PID=$!
-echo "✅ Servidor backend iniciado (PID: $SERVER_PID)"
+echo "✅ Backend server started (PID: $SERVER_PID)"
 
 # Aguardar servidor inicializar
 sleep 2
@@ -67,18 +67,18 @@ sleep 2
 cd ..
 
 # Instalar dependências do admin React se necessário
-echo "📦 Verificando dependências do admin React..."
+echo "📦 Checking React admin dependencies..."
 cd admin-ui
 if [ ! -d "node_modules" ]; then
-    echo "📦 Instalando dependências do admin React..."
+    echo "📦 Installing React admin dependencies..."
     npm install
 fi
 
 # Iniciar admin React em background
-echo "🎨 Iniciando admin React..."
+echo "🎨 Starting admin React..."
 npm start &
 ADMIN_PID=$!
-echo "✅ Admin React iniciado (PID: $ADMIN_PID)"
+echo "✅ Admin React started (PID: $ADMIN_PID)"
 
 # Voltar para o diretório raiz
 cd ..
@@ -87,17 +87,17 @@ cd ..
 sleep 3
 
 echo ""
-echo "🎉 Clarity Analytics Platform iniciado com sucesso!"
+echo "🎉 Pulsalytics Analytics Platform started successfully!"
 echo ""
-echo "📋 Serviços em execução:"
-echo "   🔧 Servidor Backend: http://localhost:3001"
+echo "📋 Services in execution:"
+echo "   🔧 Backend Server: http://localhost:3001"
 echo "   🎨 Admin Interface: http://localhost:3000"
 echo "   📡 WebSocket Heatmap: ws://localhost:3002"
 echo "   📡 WebSocket Admin: ws://localhost:3004"
 echo ""
-echo "🌐 Para acessar o admin, abra: http://localhost:3000"
+echo "🌐 To access the admin, open: http://localhost:3000"
 echo ""
-echo "📝 Para parar os serviços, execute: ./stop_all_services.sh"
+echo "📝 To stop the services, execute: ./stop_all_services.sh"
 echo ""
 
 # Salvar PIDs em arquivo para facilitar o stop

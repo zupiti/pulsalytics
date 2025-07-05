@@ -5,11 +5,11 @@ class PulsalyticsPlugin {
   static double? _imageQuality;
   static String? _userId;
 
-  /// Inicializa o plugin do heatmap tracker
+  /// Initializes the heatmap tracker plugin
   ///
-  /// [serverUrl] - URL do servidor onde os dados serão enviados
-  /// [imageQuality] - Qualidade da imagem (0.0 a 1.0, padrão: 0.8)
-  /// [userId] - ID do usuário (opcional)
+  /// [serverUrl] - URL of the server where data will be sent
+  /// [imageQuality] - Image quality (0.0 to 1.0, default: 0.8)
+  /// [userId] - User ID (optional)
   static void initialize({
     String? serverUrl,
     double imageQuality = 0.8,
@@ -28,7 +28,7 @@ class PulsalyticsPlugin {
     );
   }
 
-  /// Injeta as configurações do heatmap antes de carregar o script
+  /// Injects the heatmap settings before loading the script
   static void _injectHeatmapConfig() {
     final configScript = ScriptElement()
       ..type = 'application/javascript'
@@ -43,7 +43,7 @@ class PulsalyticsPlugin {
     document.head!.append(configScript);
   }
 
-  /// Injeta um script no documento HTML
+  /// Injects a script into the HTML document
   static void _injectScript(String src, {void Function()? onLoad}) {
     final script = ScriptElement()
       ..src = src
@@ -56,15 +56,15 @@ class PulsalyticsPlugin {
     document.body!.append(script);
   }
 
-  /// Retorna a URL do servidor configurada
+  /// Returns the configured server URL
   static String? get serverUrl => _serverUrl;
 
-  /// Retorna a qualidade da imagem configurada
+  /// Returns the configured image quality
   static double? get imageQuality => _imageQuality;
 
-  /// Retorna o ID do usuário configurado
+  /// Returns the configured user ID
   static String? get userId => _userId;
 
-  /// Verifica se o plugin foi inicializado
+  /// Checks if the plugin has been initialized
   static bool get isInitialized => _serverUrl != null;
 }
