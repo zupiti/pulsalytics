@@ -107,12 +107,6 @@ export const VideoPlayer = memo(function VideoPlayer({
       clickPoints = currentImage.metadata.clickPoints;
     }
 
-    console.log('Dados da imagem atual:', {
-      filename: currentImage.filename,
-      positions: positions.length,
-      clickPoints: clickPoints.length
-    });
-
     return { positions, clickPoints };
   }, [images, currentIndex]);
 
@@ -141,11 +135,8 @@ export const VideoPlayer = memo(function VideoPlayer({
     }
 
     if (!allPositions.length) {
-      console.log('Nenhum dado de posição encontrado para heatmap');
       return [];
     }
-
-    console.log('Criando heatmap com', allPositions.length, 'posições de todas as imagens da sessão');
 
     // Agrupar pontos próximos para criar zonas de calor
     const heatmapPoints = [];
@@ -180,7 +171,6 @@ export const VideoPlayer = memo(function VideoPlayer({
       }
     });
 
-    console.log('Heatmap criado com', heatmapPoints.length, 'zonas de todas as imagens');
     return heatmapPoints;
   }, [images, mouseData]);
 
@@ -212,13 +202,6 @@ export const VideoPlayer = memo(function VideoPlayer({
     const scaleX = rect.width / img.naturalWidth;
     const scaleY = rect.height / img.naturalHeight;
 
-    console.log('Canvas setup:', {
-      canvasSize: { width: canvas.width, height: canvas.height },
-      imageNatural: { width: img.naturalWidth, height: img.naturalHeight },
-      imageRendered: { width: rect.width, height: rect.height },
-      scale: { x: scaleX, y: scaleY }
-    });
-
     // Obter dados da imagem atual
     const { positions, clickPoints } = getCurrentImageData();
 
@@ -234,21 +217,11 @@ export const VideoPlayer = memo(function VideoPlayer({
       finalClickPoints = clickData;
     }
 
-    console.log('Dados finais para desenho:', {
-      positions: finalPositions.length,
-      clicks: finalClickPoints.length,
-      showHeatmap,
-      showTrail,
-      showClicks
-    });
-
     // Desenhar mapa de calor
     if (showHeatmap && finalPositions.length > 0) {
-      console.log('Desenhando mapa de calor...');
       ctx.globalCompositeOperation = 'multiply';
 
       const heatmapPoints = createHeatmapData();
-      console.log('Pontos do heatmap:', heatmapPoints.length);
 
       heatmapPoints.forEach(point => {
         const x = point.x * scaleX;
@@ -273,8 +246,6 @@ export const VideoPlayer = memo(function VideoPlayer({
 
     // Desenhar trilha do mouse (mostrando todos os pontos)
     if (showTrail && finalPositions.length > 0) {
-      console.log('Desenhando trilha com', finalPositions.length, 'pontos');
-
       // Desenhar linha conectando os pontos
       if (finalPositions.length > 1) {
         ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
@@ -286,8 +257,6 @@ export const VideoPlayer = memo(function VideoPlayer({
         finalPositions.forEach((point, index) => {
           const x = point.x * scaleX;
           const y = point.y * scaleY;
-
-          console.log(`Ponto ${index}:`, { original: point, scaled: { x, y } });
 
           if (index === 0) {
             ctx.moveTo(x, y);
@@ -320,14 +289,10 @@ export const VideoPlayer = memo(function VideoPlayer({
 
     // Desenhar cliques
     if (showClicks && finalClickPoints.length > 0) {
-      console.log('Desenhando', finalClickPoints.length, 'cliques');
-
       finalClickPoints.forEach((click, index) => {
         const x = click.x * scaleX;
         const y = click.y * scaleY;
         const opacity = Math.max(0.7, (index + 1) / finalClickPoints.length);
-
-        console.log(`Clique ${index}:`, { original: click, scaled: { x, y } });
 
         // Círculo azul para clique
         ctx.fillStyle = `rgba(0, 100, 255, ${opacity * 0.6})`;
@@ -356,49 +321,25 @@ export const VideoPlayer = memo(function VideoPlayer({
       ctx.font = '16px Arial';
       ctx.fillText('Sem dados de tracking', 20, 30);
     }
-
-    console.log('✅ Desenho do canvas concluído');
   }, [getCurrentImageData, mouseData, clickData, showHeatmap, showTrail, showClicks, heatmapIntensity, imageLoaded, createHeatmapData]);
 
   // Verificar se as imagens já têm dados de tracking quando carregam
   useEffect(() => {
     if (images && images.length > 0) {
-      console.log('=== VERIFICANDO DADOS NAS IMAGENS ===');
       images.forEach((img, index) => {
-        console.log(`Imagem ${index}:`, {
-          filename: img.filename,
-          hasPositions: !!(img.positions && img.positions.length > 0),
-          hasClickPoints: !!(img.clickPoints && img.clickPoints.length > 0),
-          hasMetadata: !!(img.metadata),
-          positions: img.positions?.length || 0,
-          clicks: img.clickPoints?.length || 0,
-          metadataPositions: img.metadata?.positions?.length || 0,
-          metadataClicks: img.metadata?.clickPoints?.length || 0
-        });
       });
-      console.log('=====================================');
     }
   }, [images]);
 
   // Resetar estado da imagem quando mudar o índice
   useEffect(() => {
     setImageLoaded(false);
-    console.log('Imagem mudou para índice:', currentIndex);
   }, [currentIndex]);
 
   // Buscar dados de tracking específicos para a imagem atual
   useEffect(() => {
     if (images && images[currentIndex]) {
       const currentImage = images[currentIndex];
-      console.log('=== DADOS DA IMAGEM ATUAL ===');
-      console.log('Imagem:', currentImage.filename);
-      console.log('Positions diretas:', currentImage.positions?.length || 0);
-      console.log('ClickPoints diretos:', currentImage.clickPoints?.length || 0);
-      console.log('Metadata positions:', currentImage.metadata?.positions?.length || 0);
-      console.log('Metadata clicks:', currentImage.metadata?.clickPoints?.length || 0);
-      console.log('============================');
-
-      // Forçar redesenho após trocar de imagem
       if (imageLoaded) {
         setTimeout(() => {
           drawHeatmap();
@@ -428,7 +369,6 @@ export const VideoPlayer = memo(function VideoPlayer({
 
       setLastDataUpdate(Date.now());
     } catch (error) {
-      console.error('Erro ao buscar dados de interação:', error);
     }
   }, [sessionId, apiUrl]);
 
@@ -450,7 +390,6 @@ export const VideoPlayer = memo(function VideoPlayer({
   // Redesenhar quando os dados ou configurações mudarem
   useEffect(() => {
     if (imageLoaded) {
-      console.log('Redesenhando devido a mudanças nos dados/configurações');
       drawHeatmap();
     }
   }, [drawHeatmap, imageLoaded]);
@@ -459,7 +398,6 @@ export const VideoPlayer = memo(function VideoPlayer({
   useEffect(() => {
     const handleResize = () => {
       if (imageLoaded) {
-        console.log('Redesenhando devido a redimensionamento');
         setTimeout(drawHeatmap, 100);
       }
     };
@@ -470,14 +408,6 @@ export const VideoPlayer = memo(function VideoPlayer({
 
   // Debug: Log dos dados atuais
   useEffect(() => {
-    console.log('=== DEBUG TRACKING DATA ===');
-    console.log('Current image:', images[currentIndex]);
-    const { positions, clickPoints } = getCurrentImageData();
-    console.log('Current image data:', { positions: positions.length, clickPoints: clickPoints.length });
-    console.log('Mouse data (API):', mouseData);
-    console.log('Click data (API):', clickData);
-    console.log('Show states:', { showHeatmap, showTrail, showClicks });
-    console.log('============================');
   }, [images, currentIndex, getCurrentImageData, mouseData, clickData, showHeatmap, showTrail, showClicks]);
 
   // Status da sessão com lógica de timeout
@@ -517,7 +447,6 @@ export const VideoPlayer = memo(function VideoPlayer({
 
   // Função para forçar redesenho (para debug)
   const forceRedraw = useCallback(() => {
-    console.log('Forçando redesenho...');
     setImageLoaded(false);
     setTimeout(() => {
       setImageLoaded(true);
@@ -606,16 +535,12 @@ export const VideoPlayer = memo(function VideoPlayer({
                   src={getImageUrl(images[currentIndex])}
                   alt={`Frame ${currentIndex + 1}`}
                   onLoad={() => {
-                    console.log('Imagem carregada:', images[currentIndex]?.filename);
                     setImageLoaded(true);
-                    // Redesenhar após a imagem carregar
                     setTimeout(() => {
-                      console.log('Executando drawHeatmap após carregamento da imagem');
                       drawHeatmap();
                     }, 150);
                   }}
                   onError={(e) => {
-                    console.error('Erro ao carregar imagem:', e);
                     setImageLoaded(false);
                   }}
                   style={{
