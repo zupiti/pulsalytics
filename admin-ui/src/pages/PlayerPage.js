@@ -27,7 +27,7 @@ export default function PlayerPage({
 
   // Memoizar as imagens da sessão selecionada
   const images = useMemo(() => {
-    return sessionId && groups ? (groups[sessionId] || []) : [];
+    return sessionId && groups ? (groups[sessionId] || []).slice().reverse() : [];
   }, [sessionId, groups]);
 
   // Função para buscar informações detalhadas da sessão
