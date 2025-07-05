@@ -48,112 +48,132 @@ function AppContent() {
   const [wsServerConnected, setWsServerConnected] = useState(false);
 
   const videoIntervalRef = useRef(null);
+  const wsRef = useRef(null);
 
-  // Configurações com variáveis de ambiente corretas
+  // Configurações com variáveis de ambiente
   const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001';
-  const heatmapWsUrl = process.env.REACT_APP_HEATMAP_WS_URL || 'ws://localhost:3002';
 
-  // Throttle para evitar múltiplas chamadas
-  const lastFetchTime = useRef(0);
-  const FETCH_THROTTLE = 2000; // 2 segundos entre chamadas
-
-  // Função para buscar imagens com throttling
-  const fetchImages = useCallback(async () => {
-    const now = Date.now();
-    if (now - lastFetchTime.current < FETCH_THROTTLE) {
-      console.log('⏸️ Fetch throttled - muito recente');
-      return;
-    }
-
+  // Função para buscar dados da API
+  const fetchData = useCallback(async () => {
     try {
-      lastFetchTime.current = now;
-      setLoading(true);
+      const response = await fetch(`${apiUrl}/api/uploads`);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Dados recebidos:', data);
 
-      console.log('🔄 Buscando imagens do servidor...');
-      const response = await fetch(`${apiUrl}/api/images`);
-      const data = await response.json();
+        // Processar dados - agora o servidor já retorna apenas imagens WebP
+        const processedGroups = {};
 
-      // Ordenar por timestamp da última imagem de cada sessão
-      const sortedGroups = Object.entries(data).sort(([, a], [, b]) => {
-        const lastA = a.length > 0 ? Math.max(...a.map(img => img.timestamp)) : 0;
-        const lastB = b.length > 0 ? Math.max(...b.map(img => img.timestamp)) : 0;
-        return lastB - lastA;
-      });
+        Object.keys(data).forEach(sessionId => {
+          const files = data[sessionId];
 
-      setGroups(Object.fromEntries(sortedGroups));
+          if (files.length > 0) {
+            processedGroups[sessionId] = files.map(file => ({
+              filename: file.filename,
+              timestamp: file.timestamp,
+              url: file.url,
+              positions: file.positions || [],
+              clickPoints: file.clickPoints || [],
+              originalUrl: file.originalUrl || '',
+              hasMetadata: file.hasMetadata || false,
+              metadata: file.metadata
+            }));
+          }
+        });
 
-      // Atualizar estatísticas das sessões
-      const newStats = new Map();
-      sortedGroups.forEach(([sessionId, images]) => {
-        if (images.length > 0) {
-          const timestamps = images.map(img => img.timestamp);
-          const startTime = Math.min(...timestamps);
-          const endTime = Math.max(...timestamps);
+        setGroups(processedGroups);
 
-          newStats.set(sessionId, {
-            totalImages: images.length,
-            startTime: new Date(startTime),
-            endTime: new Date(endTime),
-            duration: Math.round((endTime - startTime) / 1000),
-            sessionId: sessionId
-          });
-        } else {
-          // Sessão ativa sem imagens
-          newStats.set(sessionId, {
-            totalImages: 0,
-            startTime: new Date(),
-            endTime: new Date(),
-            duration: 0,
-            sessionId: sessionId,
-            isActive: true
-          });
-        }
-      });
+        // Calcular estatísticas das sessões
+        const stats = new Map();
+        Object.keys(processedGroups).forEach(sessionId => {
+          const images = processedGroups[sessionId];
+          if (images.length > 0) {
+            const firstImage = images[images.length - 1];
+            const lastImage = images[0];
 
-      setSessionStats(newStats);
-      setLoading(false);
-      console.log(`📊 Carregadas ${sortedGroups.length} sessões (${Array.from(newStats.values()).reduce((sum, stat) => sum + stat.totalImages, 0)} imagens)`);
+            stats.set(sessionId, {
+              sessionId,
+              totalImages: images.length,
+              startTime: new Date(firstImage.timestamp),
+              endTime: new Date(lastImage.timestamp),
+              lastImageTime: new Date(lastImage.timestamp),
+              duration: lastImage.timestamp - firstImage.timestamp,
+              isActive: true,
+              totalPositions: images.reduce((sum, img) => sum + (img.positions?.length || 0), 0),
+              totalClicks: images.reduce((sum, img) => sum + (img.clickPoints?.length || 0), 0),
+              hasMetadata: images.some(img => img.hasMetadata)
+            });
+          }
+        });
 
+        setSessionStats(stats);
+      }
     } catch (error) {
-      console.error('Erro ao buscar imagens:', error);
+      console.error('Erro ao buscar dados:', error);
+    } finally {
       setLoading(false);
-      setGroups({});
-      setSessionStats(new Map());
     }
   }, [apiUrl]);
 
   // Função para deletar sessão
   const deleteSession = useCallback(async (sessionId) => {
-    if (!window.confirm(`Tem certeza que deseja deletar a sessão ${sessionId}?`)) {
-      return;
-    }
-
     try {
-      console.log(`🗑️ Deletando sessão: ${sessionId}`);
-
       const response = await fetch(`${apiUrl}/api/session/${sessionId}`, {
         method: 'DELETE'
       });
 
       if (response.ok) {
-        const result = await response.json();
-        console.log(`✅ Sessão deletada:`, result);
-
-        // Atualizar lista de imagens após deleção
-        setTimeout(() => fetchImages(), 1000);
-
-        // Mostrar notificação de sucesso
-        alert(`Sessão ${sessionId} deletada com sucesso!\nArquivos removidos: ${result.deletedFiles}`);
-      } else {
-        const error = await response.json();
-        console.error('Erro ao deletar sessão:', error);
-        alert(`Erro ao deletar sessão: ${error.message || 'Erro desconhecido'}`);
+        console.log(`Sessão ${sessionId} deletada com sucesso`);
+        await fetchData(); // Recarregar dados
       }
     } catch (error) {
       console.error('Erro ao deletar sessão:', error);
-      alert(`Erro ao deletar sessão: ${error.message}`);
     }
-  }, [apiUrl, fetchImages]);
+  }, [apiUrl, fetchData]);
+
+  // Conectar WebSocket para atualizações em tempo real
+  useEffect(() => {
+    fetchData();
+
+    // Configurar WebSocket para atualizações
+    const wsUrl = `ws://localhost:3004`;
+    const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      console.log('✅ WebSocket conectado');
+      setWsServerConnected(true);
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'new_data') {
+          console.log('📡 Novos dados recebidos:', data);
+          fetchData(); // Recarregar dados quando houver novos dados
+        }
+      } catch (error) {
+        console.error('Erro ao processar mensagem WebSocket:', error);
+      }
+    };
+
+    ws.onclose = () => {
+      console.log('🔌 WebSocket desconectado');
+      setWsServerConnected(false);
+    };
+
+    ws.onerror = (error) => {
+      console.error('❌ Erro WebSocket:', error);
+      setWsServerConnected(false);
+    };
+
+    return () => {
+      if (ws) {
+        ws.close();
+      }
+    };
+  }, [fetchData]);
 
   // Handlers para o player
   const handlePlayPause = useCallback(() => {
@@ -184,191 +204,55 @@ function AppContent() {
 
   // Handlers para navegação
   const handleSelectSession = useCallback((sessionId) => {
-    navigate(`/player/${sessionId}`);
+    navigate(`/online-session/${sessionId}`);
   }, [navigate]);
 
   const handleCreateVideo = useCallback((sessionId) => {
-    navigate(`/player/${sessionId}`);
+    navigate(`/online-session/${sessionId}`);
     setCurrentImageIndex(0);
   }, [navigate]);
-
-  // Conectar ao WebSocket para receber atualizações em tempo real
-  useEffect(() => {
-    let isConnected = false;
-    let reconnectTimeout = null;
-    let ws = null;
-
-    const connectToWebSocket = () => {
-      if (ws) {
-        ws.close();
-      }
-
-      try {
-        console.log('🔌 Conectando ao WebSocket do heatmap...');
-        ws = new WebSocket(heatmapWsUrl);
-
-        ws.onopen = () => {
-          console.log('✅ WebSocket do heatmap conectado');
-          setWsServerConnected(true);
-          isConnected = true;
-
-          // Buscar imagens após conexão
-          fetchImages();
-        };
-
-        ws.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            console.log('�� Mensagem WebSocket do heatmap recebida:', data);
-
-            switch (data.type) {
-              case 'image_uploaded':
-                console.log(`🖼️ Nova imagem enviada: ${data.filename} (sessão: ${data.sessionId})`);
-                // Throttled fetch para evitar múltiplas chamadas
-                setTimeout(() => fetchImages(), 1000);
-                break;
-
-              case 'upload_in_progress':
-                console.log(`⏳ Upload em progresso (sessão: ${data.sessionId})`);
-                // Opcional: mostrar indicador de upload
-                break;
-
-              case 'session_started':
-                console.log(`🆕 Nova sessão heatmap iniciada: ${data.sessionId}`);
-                // Esperar um pouco para sessão se estabelecer
-                setTimeout(() => fetchImages(), 2000);
-                break;
-
-              case 'session_ended':
-                console.log(`⏹️ Sessão heatmap finalizada: ${data.sessionId}`);
-                // Marcar sessão como desconectada
-                setDisconnectedSessions(prev => new Set(prev).add(data.sessionId));
-                setTimeout(() => fetchImages(), 1000);
-                break;
-
-              case 'connections_status':
-                console.log(`📊 Status das conexões heatmap:`, data.connections);
-                // Atualizar status das conexões ativas
-                break;
-
-              case 'upload_success':
-                console.log(`✅ Upload concluído: ${data.filename}`);
-                // Fetch imediato após confirmação de upload
-                setTimeout(() => fetchImages(), 500);
-                break;
-
-              case 'upload_error':
-                console.error(`❌ Erro no upload: ${data.error}`);
-                break;
-
-              default:
-                console.log('Mensagem WebSocket heatmap desconhecida:', data);
-            }
-          } catch (error) {
-            console.error('Erro ao processar mensagem WebSocket do heatmap:', error);
-          }
-        };
-
-        ws.onclose = () => {
-          console.log('🔌 Conexão WebSocket do heatmap fechada');
-          setWsServerConnected(false);
-          isConnected = false;
-
-          // Tentar reconectar após 5 segundos apenas se o componente ainda estiver montado
-          if (!reconnectTimeout) {
-            reconnectTimeout = setTimeout(() => {
-              if (!isConnected) {
-                console.log('🔄 Tentando reconectar WebSocket do heatmap...');
-                connectToWebSocket();
-              }
-            }, 5000);
-          }
-        };
-
-        ws.onerror = (error) => {
-          console.error('❌ Erro WebSocket do heatmap:', error);
-          setWsServerConnected(false);
-          isConnected = false;
-        };
-
-      } catch (error) {
-        console.error('❌ Erro ao criar WebSocket do heatmap:', error);
-        setWsServerConnected(false);
-        isConnected = false;
-
-        // Tentar reconectar após 5 segundos
-        if (!reconnectTimeout) {
-          reconnectTimeout = setTimeout(() => {
-            if (!isConnected) {
-              connectToWebSocket();
-            }
-          }, 5000);
-        }
-      }
-    };
-
-    // Conectar inicialmente
-    connectToWebSocket();
-
-    return () => {
-      isConnected = false;
-      if (reconnectTimeout) {
-        clearTimeout(reconnectTimeout);
-      }
-      if (ws) {
-        ws.close();
-      }
-    };
-  }, [heatmapWsUrl, fetchImages]);
-
-  // Atualizar lista de imagens periodicamente - REDUZIDO para evitar spam
-  useEffect(() => {
-    // Buscar imagens na inicialização
-    fetchImages();
-
-    // Atualizar periodicamente a cada 30 segundos (reduzido de 15 para 30)
-    const interval = setInterval(() => {
-      // Só atualizar se não estiver em loading e se a janela estiver ativa
-      if (!loading && document.hasFocus()) {
-        console.log('🔄 Update automático (30s)');
-        fetchImages();
-      }
-    }, 30000); // 30 segundos
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [fetchImages, loading]);
 
   // Memoizar dados derivados
   const sessionIds = useMemo(() => groups ? Object.keys(groups) : [], [groups]);
 
-  // Memoizar sessões ordenadas por status e atividade
+  // Memoizar sessões ordenadas por atividade
   const sortedSessionIds = useMemo(() => {
-    if (!groups || !sessionStats.sessionDetails) return sessionIds;
+    if (!groups || !sessionStats) return sessionIds;
 
     return sessionIds.sort((a, b) => {
-      const aDetail = sessionStats.sessionDetails[a];
-      const bDetail = sessionStats.sessionDetails[b];
-      const aDisconnected = disconnectedSessions.has(a);
-      const bDisconnected = disconnectedSessions.has(b);
-      const aOnline = aDetail?.isActive && !aDisconnected;
-      const bOnline = bDetail?.isActive && !bDisconnected;
+      const aStats = sessionStats.get(a);
+      const bStats = sessionStats.get(b);
 
-      // Primeiro: sessões online
-      if (aOnline && !bOnline) return -1;
-      if (!aOnline && bOnline) return 1;
+      if (!aStats || !bStats) return 0;
 
-      // Segundo: sessões desconectadas ficam por último
-      if (aDisconnected && !bDisconnected) return 1;
-      if (!aDisconnected && bDisconnected) return -1;
-
-      // Terceiro: por última atividade (mais recente primeiro)
-      const aLastActivity = aDetail?.lastImageTime?.getTime() || 0;
-      const bLastActivity = bDetail?.lastImageTime?.getTime() || 0;
+      // Ordenar por última atividade (mais recente primeiro)
+      const aLastActivity = aStats.lastImageTime?.getTime() || 0;
+      const bLastActivity = bStats.lastImageTime?.getTime() || 0;
       return bLastActivity - aLastActivity;
     });
-  }, [sessionIds, sessionStats.sessionDetails, disconnectedSessions, groups]);
+  }, [sessionIds, sessionStats, groups]);
+
+  // Preparar dados das estatísticas
+  const preparedSessionStats = useMemo(() => {
+    const totalSessions = sessionIds.length;
+    const totalImages = sessionIds.reduce((sum, sessionId) => {
+      const sessionData = groups[sessionId];
+      return sum + (sessionData ? sessionData.length : 0);
+    }, 0);
+
+    const sessionDetails = {};
+    sessionStats.forEach((stats, sessionId) => {
+      sessionDetails[sessionId] = stats;
+    });
+
+    return {
+      totalSessions,
+      totalImages,
+      totalClicks: 0, // Será calculado quando implementarmos cliques
+      avgSessionTime: 0, // Será calculado quando implementarmos duração
+      sessionDetails
+    };
+  }, [sessionIds, groups, sessionStats]);
 
   return (
     <Box sx={{ display: 'flex', bgcolor: '#f5f5f5', minHeight: '100vh' }}>
@@ -376,15 +260,15 @@ function AppContent() {
       <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, bgcolor: '#222' }}>
         <Toolbar>
           <Typography variant="h5" noWrap component="div">
-            📊 Clarity Analytics Platform {wsServerConnected && '🟢'}
+            📊 Clarity Analytics Platform
           </Typography>
         </Toolbar>
       </AppBar>
 
       <Sidebar
-        sortedSessionIds={sessionIds}
+        sortedSessionIds={sortedSessionIds}
         groups={groups}
-        sessionStats={sessionStats}
+        sessionStats={preparedSessionStats}
         disconnectedSessions={disconnectedSessions}
       />
 
@@ -401,9 +285,14 @@ function AppContent() {
               path="/"
               element={
                 <OverviewPage
-                  sessionStats={sessionStats}
-                  lastUpdateTime={Date.now()} // Valor padrão
-                  wsStats={{ totalMessages: 0, imagesReceived: 0, activeConnections: 0, serverStatus: wsServerConnected ? 'connected' : 'disconnected' }} // Valor padrão
+                  sessionStats={preparedSessionStats}
+                  lastUpdateTime={Date.now()}
+                  wsStats={{
+                    totalMessages: 0,
+                    imagesReceived: preparedSessionStats.totalImages,
+                    activeConnections: sortedSessionIds.length,
+                    serverStatus: wsServerConnected ? 'connected' : 'disconnected'
+                  }}
                 />
               }
             />
@@ -411,14 +300,14 @@ function AppContent() {
               path="/sessions"
               element={
                 <SessionsPage
-                  sessionStats={sessionStats}
+                  sessionStats={preparedSessionStats}
                   groups={groups}
                   selectedSession={null}
                   onSelectSession={handleSelectSession}
                   onCreateVideo={handleCreateVideo}
                   onDeleteSession={deleteSession}
                   disconnectedSessions={disconnectedSessions}
-                  sessionStatus={{}} // Valor padrão vazio
+                  sessionStatus={{}}
                 />
               }
             />
@@ -435,9 +324,9 @@ function AppContent() {
                   onIndexChange={setCurrentImageIndex}
                   onSpeedChange={setPlaybackSpeed}
                   onDeleteSession={deleteSession}
-                  sessionStats={sessionStats}
+                  sessionStats={preparedSessionStats}
                   disconnectedSessions={disconnectedSessions}
-                  sessionStatus={{}} // Valor padrão vazio
+                  sessionStatus={{}}
                 />
               }
             />

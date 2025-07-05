@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Heatmap Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .button {
+            padding: 15px 30px;
+            margin: 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .button:hover {
+            background: #45a049;
+        }
+
+        .info {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        .status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            background: #333;
+            color: white;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .test-area {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="status" id="status">Carregando...</div>
+
+    <div class="container">
+        <h1>🔥 Teste do Heatmap Tracker</h1>
+
+        <p>Esta página está capturando seus movimentos do mouse e cliques em tempo real.</p>
+
+        <div class="test-area">
+            <h3>Área de Teste</h3>
+            <p>Mova o mouse aqui e clique para gerar dados!</p>
+            <button class="button" onclick="alert('Clique capturado!')">Clique aqui</button>
+            <button class="button" onclick="changeColor()">Mudar Cor</button>
+            <button class="button" onclick="addElement()">Adicionar Elemento</button>
+        </div>
+
+        <div class="info">
+            <h3>📊 Informações</h3>
+            <p><strong>Session ID:</strong> <span id="sessionId">-</span></p>
+            <p><strong>Status:</strong> <span id="wsStatus">Conectando...</span></p>
+            <p><strong>Última Captura:</strong> <span id="lastCapture">-</span></p>
+            <p><strong>Total de Capturas:</strong> <span id="totalCaptures">0</span></p>
+        </div>
+
+        <div id="dynamic-content">
+            <!-- Conteúdo dinâmico será adicionado aqui -->
+        </div>
+    </div>
+
+    <!-- Carregar html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- Carregar nosso script heatmap -->
+    <script src="http://localhost:3001/flutter_heatmap_tracker/web/heatmap.js"></script>
+
+    <script>
+        let captureCount = 0;
+
+        // Funções de teste
+        function changeColor() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#f0932b', '#eb4d4b', '#6c5ce7'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            document.body.style.background = `linear-gradient(135deg, ${randomColor} 0%, #764ba2 100%)`;
+        }
+
+        function addElement() {
+            const dynamicContent = document.getElementById('dynamic-content');
+            const newElement = document.createElement('div');
+            newElement.innerHTML = `
+                <div style="margin: 10px 0; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 5px;">
+                    <h4>Elemento Dinâmico ${Date.now()}</h4>
+                    <p>Elemento adicionado em: ${new Date().toLocaleTimeString()}</p>
+                    <button class="button" onclick="this.parentElement.remove()">Remover</button>
+                </div>
+            `;
+            dynamicContent.appendChild(newElement);
+        }
+
+        // Atualizar informações na tela
+        function updateStatus() {
+            if (window.HeatmapTracker && window.HeatmapTracker.getSessionId) {
+                document.getElementById('sessionId').textContent = window.HeatmapTracker.getSessionId();
+            }
+
+            document.getElementById('lastCapture').textContent = new Date().toLocaleTimeString();
+            document.getElementById('totalCaptures').textContent = ++captureCount;
+        }
+
+        // Atualizar status a cada segundo
+        setInterval(updateStatus, 1000);
+
+        // Verificar se o heatmap tracker está funcionando
+        setTimeout(() => {
+            if (window.HeatmapTracker) {
+                document.getElementById('status').textContent = '✅ Heatmap Ativo';
+                document.getElementById('status').style.background = '#4CAF50';
+                document.getElementById('wsStatus').textContent = 'Conectado';
+            } else {
+                document.getElementById('status').textContent = '❌ Heatmap Erro';
+                document.getElementById('status').style.background = '#f44336';
+                document.getElementById('wsStatus').textContent = 'Erro';
+            }
+        }, 2000);
+    </script>
+</body>
+
+</html>

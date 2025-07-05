@@ -6,7 +6,7 @@ void main() async {
 
   // Inicializa o plugin do heatmap tracker
   HeatmapTrackerPlugin.initialize(
-    serverUrl: 'http://localhost:3001',
+    serverUrl: 'http://localhost:3002',
     imageQuality: 0.3,
     userId: 'user_demo_123',
   );

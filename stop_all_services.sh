@@ -1,71 +1,78 @@
 #!/bin/bash
 
-echo "🛑 Parando todos os serviços do Clarity Analytics..."
+echo "🛑 Parando Clarity Analytics Platform..."
 
-# Cores para output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-# Função para matar processo em uma porta específica
-kill_port() {
-    local port=$1
+# Função para matar processo por PID
+kill_process() {
+    local pid=$1
     local name=$2
-    local pids=$(lsof -ti :$port)
-    if [ ! -z "$pids" ]; then
-        echo -e "${YELLOW}⚠️  Matando $name na porta $port (PIDs: $pids)${NC}"
-        echo $pids | xargs kill -9 2>/dev/null || true
-        sleep 1
+    
+    if [ ! -z "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+        echo "🔄 Parando $name (PID: $pid)..."
+        kill -TERM "$pid" 2>/dev/null
         
-        # Verificar se realmente parou
-        local remaining_pids=$(lsof -ti :$port)
-        if [ -z "$remaining_pids" ]; then
-            echo -e "${GREEN}✅ $name parado com sucesso${NC}"
-        else
-            echo -e "${RED}❌ $name ainda está rodando${NC}"
+        # Aguardar 5 segundos para processo parar graciosamente
+        sleep 5
+        
+        # Se ainda estiver rodando, força a parada
+        if kill -0 "$pid" 2>/dev/null; then
+            echo "⚠️  Forçando parada do $name..."
+            kill -KILL "$pid" 2>/dev/null
         fi
+        
+        echo "✅ $name parado"
     else
-        echo -e "${BLUE}ℹ️  $name não está rodando na porta $port${NC}"
+        echo "⚠️  $name não estava rodando ou já foi parado"
     fi
 }
 
-# Parar todos os serviços
-echo -e "${BLUE}🔍 Parando serviços...${NC}"
-
-kill_port 3000 "Admin UI"
-kill_port 3001 "Backend Principal"
-kill_port 3002 "WebSocket Server"
-kill_port 3004 "WebSocket Admin"
-kill_port 5000 "Flutter App"
-
-# Parar processos específicos do Flutter
-echo -e "${BLUE}🦋 Parando processos Flutter...${NC}"
-pkill -f "flutter run" 2>/dev/null || true
-pkill -f "dart" 2>/dev/null || true
-
-# Parar processos Node.js específicos
-echo -e "${BLUE}🟢 Parando processos Node.js...${NC}"
-pkill -f "node server.js" 2>/dev/null || true
-pkill -f "node websocket-server.js" 2>/dev/null || true
-
-# Parar processos React
-echo -e "${BLUE}⚛️  Parando processos React...${NC}"
-pkill -f "react-scripts" 2>/dev/null || true
-
-echo -e "${GREEN}🎉 Todos os serviços foram parados!${NC}"
-
-# Verificar se algum processo ainda está rodando
-echo -e "${BLUE}🔍 Verificação final...${NC}"
-REMAINING_PORTS=(3000 3001 3002 3004 5000)
-
-for port in "${REMAINING_PORTS[@]}"; do
-    if lsof -Pi :$port -sTCP:LISTEN -t >/dev/null ; then
-        echo -e "${YELLOW}⚠️  Porta $port ainda está ocupada${NC}"
+# Função para matar processos por porta
+kill_port() {
+    local port=$1
+    local name=$2
+    
+    local pids=$(lsof -ti :$port 2>/dev/null)
+    if [ ! -z "$pids" ]; then
+        echo "🔄 Parando processos na porta $port ($name)..."
+        echo $pids | xargs kill -TERM 2>/dev/null
+        sleep 3
+        
+        # Verificar se ainda há processos na porta
+        local remaining_pids=$(lsof -ti :$port 2>/dev/null)
+        if [ ! -z "$remaining_pids" ]; then
+            echo "⚠️  Forçando parada dos processos na porta $port..."
+            echo $remaining_pids | xargs kill -KILL 2>/dev/null
+        fi
+        
+        echo "✅ Processos na porta $port parados"
     else
-        echo -e "${GREEN}✅ Porta $port liberada${NC}"
+        echo "⚠️  Nenhum processo encontrado na porta $port"
     fi
-done
+}
 
-echo -e "${GREEN}🛑 Sistema parado com sucesso!${NC}" 
+# Ler PIDs salvos durante o start
+if [ -f ".server_pid" ]; then
+    SERVER_PID=$(cat .server_pid)
+    kill_process "$SERVER_PID" "Servidor Backend"
+    rm -f .server_pid
+fi
+
+if [ -f ".admin_pid" ]; then
+    ADMIN_PID=$(cat .admin_pid)
+    kill_process "$ADMIN_PID" "Admin React"
+    rm -f .admin_pid
+fi
+
+# Garantir que as portas estejam livres
+echo "🔍 Verificando e limpando portas..."
+kill_port 3001 "Servidor Backend"
+kill_port 3000 "Admin React"
+kill_port 3002 "WebSocket Heatmap"
+kill_port 3004 "WebSocket Admin"
+
+# Aguardar um pouco para garantir que tudo parou
+sleep 2
+
+echo ""
+echo "✅ Clarity Analytics Platform parado com sucesso!"
+echo "" 
