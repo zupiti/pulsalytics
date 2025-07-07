@@ -65,7 +65,7 @@
       "name": "flutter_pulsalytics",
       "rootUri": "../../",
       "packageUri": "lib/",
-      "languageVersion": "3.0"
+      "languageVersion": "2.12"
     },
     {
       "name": "flutter_test",
