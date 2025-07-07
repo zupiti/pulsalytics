@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.0.0] - 2024-06-07
+## [1.0.0] - 2025-07-04
 ### Added
 - First public release of the plugin.
 - Mouse, click, and screenshot tracking.
@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 ### Notices
 - Project under development. Sensitive data handling and code optimization are missing.
 
-## [1.0.1] - 2025-01-07
+## [1.0.1] - 2025-07-04
 
 ### ✨ Added
 - **Real-time mouse tracking**: Automatic capture of mouse movements
@@ -42,3 +42,8 @@ All notable changes to this project will be documented in this file.
 - Clean and well-documented API
 - Functional usage example
 - Compatibility with existing Node.js server
+
+
+##[1.0.2] 2025-07-07
+
+- Correcao do aspect ratio da imagem exibida
