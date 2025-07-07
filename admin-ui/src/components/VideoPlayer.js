@@ -84,10 +84,11 @@ export const VideoPlayer = memo(function VideoPlayer({
   // Função para obter dados da imagem atual
   const getCurrentImageData = useCallback(() => {
     const currentImage = images[currentIndex];
-    if (!currentImage) return { positions: [], clickPoints: [] };
+    if (!currentImage) return { positions: [], clickPoints: [], pageDimensions: null };
 
     let positions = [];
     let clickPoints = [];
+    let pageDimensions = null;
 
     // Tentar dados diretos da imagem
     if (currentImage.positions && currentImage.positions.length > 0) {
@@ -107,7 +108,14 @@ export const VideoPlayer = memo(function VideoPlayer({
       clickPoints = currentImage.metadata.clickPoints;
     }
 
-    return { positions, clickPoints };
+    // pageDimensions
+    if (currentImage.pageDimensions) {
+      pageDimensions = currentImage.pageDimensions;
+    } else if (currentImage.metadata?.pageDimensions) {
+      pageDimensions = currentImage.metadata.pageDimensions;
+    }
+
+    return { positions, clickPoints, pageDimensions };
   }, [images, currentIndex]);
 
   // Função para criar mapa de calor baseado nos dados do JSON ou mouse data
@@ -198,17 +206,24 @@ export const VideoPlayer = memo(function VideoPlayer({
     // Limpar canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Calcular escala baseada no tamanho natural vs renderizado
-    const scaleX = rect.width / img.naturalWidth;
-    const scaleY = rect.height / img.naturalHeight;
+    // Calcular escala baseada no tamanho da página original (pageDimensions) vs renderizado
+    const { positions, clickPoints, pageDimensions } = getCurrentImageData();
+    let scaleX = 1;
+    let scaleY = 1;
+    if (pageDimensions && pageDimensions.width && pageDimensions.height) {
+      scaleX = rect.width / pageDimensions.width;
+      scaleY = rect.height / pageDimensions.height;
+    } else {
+      // fallback para naturalWidth/naturalHeight
+      scaleX = rect.width / img.naturalWidth;
+      scaleY = rect.height / img.naturalHeight;
+    }
 
     // Obter dados da imagem atual
-    const { positions, clickPoints } = getCurrentImageData();
-
-    // Fallback para dados da API
     let finalPositions = positions;
     let finalClickPoints = clickPoints;
 
+    // Fallback para dados da API
     if (finalPositions.length === 0 && mouseData.length > 0) {
       finalPositions = mouseData;
     }
@@ -472,198 +487,226 @@ export const VideoPlayer = memo(function VideoPlayer({
       {images.length > 0 ? (
         <>
           {/* Player Principal - Estilo YouTube/Netflix */}
+          {(() => {
+            const { pageDimensions } = getCurrentImageData();
+            const realWidth = pageDimensions?.width || 800;
+            const realHeight = pageDimensions?.height || 600;
+            return (
+              <Box
+                sx={{
+                  bgcolor: 'white',
+                  m: 4,
+                  borderRadius: 3,
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+              >
+                {/* Área do Vídeo */}
+                <Box
+                  sx={{
+                    position: 'relative',
+                    bgcolor: '#000',
+                    borderRadius: '12px 12px 0 0',
+                    overflow: 'hidden',
+                    width: realWidth,
+                    height: realHeight,
+                    margin: '0 auto'
+                  }}
+                >
+                  {/* Exibir dimensões reais da imagem (pageDimensions) */}
+                  {pageDimensions && pageDimensions.width && pageDimensions.height && (
+                    <Box sx={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 16,
+                      zIndex: 10,
+                      bgcolor: 'rgba(0,0,0,0.6)',
+                      color: '#fff',
+                      px: 2,
+                      py: 0.5,
+                      borderRadius: 2,
+                      fontSize: 13,
+                      fontWeight: 500
+                    }}>
+                      {pageDimensions.width} x {pageDimensions.height} px
+                    </Box>
+                  )}
+                  <img
+                    src={getImageUrl(images[currentIndex])}
+                    alt={`Frame ${currentIndex + 1}`}
+                    onLoad={() => {
+                      setImageLoaded(true);
+                      setTimeout(() => {
+                        drawHeatmap();
+                      }, 150);
+                    }}
+                    onError={(e) => {
+                      setImageLoaded(false);
+                    }}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: realWidth,
+                      height: realHeight,
+                      objectFit: 'fill',
+                      backgroundColor: '#000'
+                    }}
+                  />
+                  <canvas
+                    ref={canvasRef}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: realWidth,
+                      height: realHeight,
+                      pointerEvents: 'none',
+                      zIndex: 2,
+                      backgroundColor: 'transparent'
+                    }}
+                  />
+                </Box>
+              </Box>
+            );
+          })()}
+
+          {/* Controles do Player - Estilo Moderno */}
           <Box sx={{
-            bgcolor: 'white',
-            m: 4,
-            borderRadius: 3,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-            overflow: 'hidden'
+            bgcolor: '#f8f9fa',
+            p: 3,
+            borderTop: '1px solid #e9ecef'
           }}>
-            {/* Área do Vídeo */}
-            <Box sx={{
-              position: 'relative',
-              bgcolor: '#000',
-              borderRadius: '12px 12px 0 0',
-              overflow: 'hidden'
-            }}>
-              <Box sx={{
-                position: 'relative',
-                width: '100%',
-                paddingTop: '56.25%', // 16:9 aspect ratio
-                overflow: 'hidden'
-              }}>
-                <img
-                  src={getImageUrl(images[currentIndex])}
-                  alt={`Frame ${currentIndex + 1}`}
-                  onLoad={() => {
-                    setImageLoaded(true);
-                    setTimeout(() => {
-                      drawHeatmap();
-                    }, 150);
-                  }}
-                  onError={(e) => {
-                    setImageLoaded(false);
-                  }}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'contain', // Manter proporção sem distorção
-                    backgroundColor: '#000' // Fundo preto para áreas vazias
-                  }}
-                />
-                <canvas
-                  ref={canvasRef}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    pointerEvents: 'none',
-                    zIndex: 2,
-                    backgroundColor: 'transparent'
-                  }}
-                />
+            {/* Barra de Progresso */}
+            <Box sx={{ mb: 3 }}>
+              <Slider
+                value={currentIndex}
+                min={0}
+                max={Math.max(images.length - 1, 0)}
+                onChange={(e, value) => onIndexChange(value)}
+                sx={{
+                  color: '#2196f3',
+                  height: 6,
+                  '& .MuiSlider-thumb': {
+                    width: 16,
+                    height: 16,
+                    '&:hover': {
+                      boxShadow: '0 0 0 8px rgba(33, 150, 243, 0.16)'
+                    }
+                  },
+                  '& .MuiSlider-track': {
+                    height: 6,
+                    borderRadius: 3
+                  },
+                  '& .MuiSlider-rail': {
+                    height: 6,
+                    borderRadius: 3,
+                    bgcolor: '#e0e0e0'
+                  }
+                }}
+              />
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                <Typography variant="body2" color="text.secondary">
+                  {formatDuration((images[currentIndex]?.timestamp || 0) - (images[0]?.timestamp || 0))}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {formatDuration(stats.duration)}
+                </Typography>
               </Box>
             </Box>
 
-            {/* Controles do Player - Estilo Moderno */}
+            {/* Controles Principais */}
             <Box sx={{
-              bgcolor: '#f8f9fa',
-              p: 3,
-              borderTop: '1px solid #e9ecef'
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
             }}>
-              {/* Barra de Progresso */}
-              <Box sx={{ mb: 3 }}>
-                <Slider
-                  value={currentIndex}
-                  min={0}
-                  max={Math.max(images.length - 1, 0)}
-                  onChange={(e, value) => onIndexChange(value)}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <IconButton
+                  onClick={() => onIndexChange(Math.max(0, currentIndex - 1))}
+                  disabled={currentIndex === 0}
                   sx={{
                     color: '#2196f3',
-                    height: 6,
-                    '& .MuiSlider-thumb': {
-                      width: 16,
-                      height: 16,
-                      '&:hover': {
-                        boxShadow: '0 0 0 8px rgba(33, 150, 243, 0.16)'
-                      }
-                    },
-                    '& .MuiSlider-track': {
-                      height: 6,
-                      borderRadius: 3
-                    },
-                    '& .MuiSlider-rail': {
-                      height: 6,
-                      borderRadius: 3,
-                      bgcolor: '#e0e0e0'
-                    }
+                    '&:hover': { bgcolor: 'rgba(33, 150, 243, 0.08)' }
                   }}
-                />
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    {formatDuration((images[currentIndex]?.timestamp || 0) - (images[0]?.timestamp || 0))}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {formatDuration(stats.duration)}
-                  </Typography>
-                </Box>
+                >
+                  <SkipPrevious />
+                </IconButton>
+                <IconButton
+                  onClick={onPlayPause}
+                  sx={{
+                    bgcolor: '#2196f3',
+                    color: 'white',
+                    width: 56,
+                    height: 56,
+                    '&:hover': {
+                      bgcolor: '#1976d2',
+                      transform: 'scale(1.05)'
+                    },
+                    transition: 'all 0.2s ease',
+                    mx: 1
+                  }}
+                >
+                  {isPlaying ? <Pause /> : <PlayArrow />}
+                </IconButton>
+                <IconButton
+                  onClick={() => onIndexChange(Math.min(images.length - 1, currentIndex + 1))}
+                  disabled={currentIndex === images.length - 1}
+                  sx={{
+                    color: '#2196f3',
+                    '&:hover': { bgcolor: 'rgba(33, 150, 243, 0.08)' }
+                  }}
+                >
+                  <SkipNext />
+                </IconButton>
+                <IconButton
+                  onClick={onStop}
+                  sx={{
+                    color: '#666',
+                    ml: 1,
+                    '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.04)' }
+                  }}
+                >
+                  <Stop />
+                </IconButton>
               </Box>
 
-              {/* Controles Principais */}
-              <Box sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <IconButton
-                    onClick={() => onIndexChange(Math.max(0, currentIndex - 1))}
-                    disabled={currentIndex === 0}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                <Typography variant="body2" color="text.secondary">
+                  {currentIndex + 1} / {images.length}
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 150 }}>
+                  <VolumeUp sx={{ color: '#666', fontSize: 20 }} />
+                  <Slider
+                    value={playbackSpeed}
+                    min={42}
+                    max={2000}
+                    step={1}
+                    onChange={(e, value) => onSpeedChange(value)}
                     sx={{
                       color: '#2196f3',
-                      '&:hover': { bgcolor: 'rgba(33, 150, 243, 0.08)' }
+                      '& .MuiSlider-thumb': {
+                        width: 14,
+                        height: 14
+                      }
                     }}
-                  >
-                    <SkipPrevious />
-                  </IconButton>
-                  <IconButton
-                    onClick={onPlayPause}
-                    sx={{
-                      bgcolor: '#2196f3',
-                      color: 'white',
-                      width: 56,
-                      height: 56,
-                      '&:hover': {
-                        bgcolor: '#1976d2',
-                        transform: 'scale(1.05)'
-                      },
-                      transition: 'all 0.2s ease',
-                      mx: 1
-                    }}
-                  >
-                    {isPlaying ? <Pause /> : <PlayArrow />}
-                  </IconButton>
-                  <IconButton
-                    onClick={() => onIndexChange(Math.min(images.length - 1, currentIndex + 1))}
-                    disabled={currentIndex === images.length - 1}
-                    sx={{
-                      color: '#2196f3',
-                      '&:hover': { bgcolor: 'rgba(33, 150, 243, 0.08)' }
-                    }}
-                  >
-                    <SkipNext />
-                  </IconButton>
-                  <IconButton
-                    onClick={onStop}
-                    sx={{
-                      color: '#666',
-                      ml: 1,
-                      '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.04)' }
-                    }}
-                  >
-                    <Stop />
-                  </IconButton>
-                </Box>
-
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    {currentIndex + 1} / {images.length}
+                  />
+                  <Typography variant="caption" color="text.secondary" sx={{ minWidth: 35 }}>
+                    {(1000 / playbackSpeed).toFixed(1)}x
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 150 }}>
-                    <VolumeUp sx={{ color: '#666', fontSize: 20 }} />
-                    <Slider
-                      value={playbackSpeed}
-                      min={42}
-                      max={2000}
-                      step={1}
-                      onChange={(e, value) => onSpeedChange(value)}
-                      sx={{
-                        color: '#2196f3',
-                        '& .MuiSlider-thumb': {
-                          width: 14,
-                          height: 14
-                        }
-                      }}
-                    />
-                    <Typography variant="caption" color="text.secondary" sx={{ minWidth: 35 }}>
-                      {(1000 / playbackSpeed).toFixed(1)}x
-                    </Typography>
-                  </Box>
-                  <IconButton
-                    onClick={() => setShowControls(!showControls)}
-                    sx={{
-                      color: '#666',
-                      '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.04)' }
-                    }}
-                  >
-                    <Settings />
-                  </IconButton>
                 </Box>
+                <IconButton
+                  onClick={() => setShowControls(!showControls)}
+                  sx={{
+                    color: '#666',
+                    '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.04)' }
+                  }}
+                >
+                  <Settings />
+                </IconButton>
               </Box>
             </Box>
           </Box>
